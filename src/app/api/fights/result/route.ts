@@ -1,0 +1,25 @@
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
+import { verifyToken } from "@/lib/auth";
+import { endCurrentFight } from "@/lib/fights";
+
+export async function POST(req: Request) {
+  const token = cookies().get("auth-token")?.value;
+  if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const t = verifyToken(token);
+  if (!t) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  if (!t.isAdmin)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const body = await req.json();
+
+  try {
+    const fight = await endCurrentFight(body.result);
+    return NextResponse.json(fight);
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message }, { status: 400 });
+  }
+  
+}

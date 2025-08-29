@@ -1,0 +1,47 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Next.js
+.next/
+out/
+.vercel/
+.DS_Store
+
+# Tailwind
+# (Tailwind itself doesn’t generate files, but PostCSS/cache may)
+*.css.map
+
+# Drizzle ORM
+drizzle/migrations/.cache
+drizzle/*.sqlite
+drizzle/*.db
+drizzle/*.json
+drizzle/*.sql
+
+# Logs
+logs
+*.log
+*.log.*
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Env files
+.env
+.env*.local
+
+# Misc
+*.swp
+*.swo
+*.swn
+*.swm
+.idea/
+.vscode/
