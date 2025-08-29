@@ -9,7 +9,7 @@ starting point for your own apps.
 
 ---
 
-## ✨ Features
+## ✨ Technologies
 
 - ⚡ **Next.js 14** -- modern React framework with App Router
 - 🗄️ **Drizzle ORM** -- fully typed database access
@@ -58,6 +58,14 @@ starting point for your own apps.
     ```
 
     App will be available at <http://localhost:3000>.
+
+    You can log in with sample accounts:
+
+    - Player: **player1** / **player1**
+    - Player: **player2** / **player2**
+    - Admin: **admin** / **admin**
+
+    Ordinary players see the main betting screen, while the admin can access the Admin Panel at <http://localhost:3000/admin> to manage fights and perform housekeeping tasks.
 
 ---
 
