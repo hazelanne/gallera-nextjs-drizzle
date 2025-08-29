@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import UserMainScreen from "@/components/UserMainScreen";
+import UserMainScreen from "@/components/player/UserMainScreen";
 
 export default async function Page() {
   const token = cookies().get("auth-token")?.value;

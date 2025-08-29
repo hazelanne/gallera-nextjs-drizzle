@@ -5,7 +5,7 @@ import { Play, Flag, XCircle, DoorOpen } from "lucide-react";
 
 type Action = "open" | "start" | "cancel" | "result";
 
-export default function AdminFightControls() {
+export default function FightControlsTab() {
   const [loading, setLoading] = useState(false);
   const [showDeclareModal, setShowDeclareModal] = useState(false);
   const [pendingResult, setPendingResult] = useState<null | "LIYAMADO" | "DRAW" | "DEHADO">(null);

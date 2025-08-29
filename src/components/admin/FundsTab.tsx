@@ -17,7 +17,7 @@ interface FundsSummary {
   overall: OverallSummary;
 }
 
-export default function AdminSummary() {
+export default function FundsTab() {
   const [summary, setSummary] = useState<FundsSummary | null>(null);
   const [loading, setLoading] = useState(true);
 

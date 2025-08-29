@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import jwt from "jsonwebtoken";
-import AdminPanel from "@/components/AdminPanel";
+import AdminPanel from "@/components/admin/AdminPanel";
 
 const SECRET = process.env.JWT_SECRET || "dev-secret";
 

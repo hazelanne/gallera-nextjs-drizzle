@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { Menu } from "lucide-react";
-import AdminFightControls from "@/components/AdminFightTab";
-import AdminSummary from "@/components/AdminFundsTab";
+import FightControlsTab from "@/components/admin/FightControlsTab";
+import FundsTab from "@/components/admin/FundsTab";
 
 export default function AdminPanel() {
   const [activeTab, setActiveTab] = useState<"fights" | "funds">(
@@ -75,8 +75,8 @@ export default function AdminPanel() {
       {/* Tab content */}
       <div className="flex justify-center">
         <div className="w-full max-w-4xl bg-white rounded-2xl shadow p-6">
-          {activeTab === "fights" && <AdminFightControls />}
-          {activeTab === "funds" && <AdminSummary />}
+          {activeTab === "fights" && <FightControlsTab />}
+          {activeTab === "funds" && <FundsTab />}
         </div>
       </div>
     </div>
