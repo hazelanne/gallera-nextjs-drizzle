@@ -28,7 +28,7 @@ starting point for your own apps.
 1.  **Clone & Setup Environment**
 
     ```bash
-    git clone https://github.com/your-org/gallera-next-drizzle-demo.git
+    git clone https://github.com/hazelanne/gallera-nextjs-drizzle.git
     cd gallera-next-drizzle-demo
     cp .env.example .env   # update with your DB credentials
     ```
@@ -111,7 +111,7 @@ Pull requests are welcome! If you'd like to: - Add new features -
 Improve docs - Report issues
 
 ...please open an
-[issue](https://github.com/your-org/gallera-next-drizzle-demo/issues) or
+[issue](https://github.com/hazelanne/gallera-nextjs-drizzle/issues) or
 submit a PR.
 
 ---
