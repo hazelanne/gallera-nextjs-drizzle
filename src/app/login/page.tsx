@@ -10,13 +10,14 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+
     const res = await fetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
     });
+    
     if (res.ok) {
-      console.log(res);
       router.push("/");
     } else {
       const j = await res.json();

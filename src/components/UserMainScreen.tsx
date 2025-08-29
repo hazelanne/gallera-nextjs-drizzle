@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import BetHistoryModal from "./BetHistoryModal";
 import { Wallet, History, Menu, Signal, User, LogOut } from "lucide-react";
 import {
@@ -81,6 +82,7 @@ export default function UserMainScreen() {
     "connected" | "disconnected" | "connecting"
   >("connecting");
   const wsRef = useRef<WebSocket | null>(null);
+  const router = useRouter();
 
   // fetch wallet and current fight
   useEffect(() => {
@@ -212,24 +214,27 @@ export default function UserMainScreen() {
             <BalanceCard value={balance}/>
 
             {/* User Menu */}
-  <DropdownMenu>
-    <DropdownMenuTrigger asChild>
-      <button className="p-2 flex items-center justify-center rounded-full hover:bg-gray-100">
-        <Menu className="w-6 h-6 text-gray-700" />
-      </button>
-    </DropdownMenuTrigger>
-    <DropdownMenuContent>
-      <DropdownMenuItem onClick={() => setShowHistory(true)}>
-        <History className="w-4 h-4 mr-2" /> History
-      </DropdownMenuItem>
-      <DropdownMenuItem>
-        <User className="w-4 h-4 mr-2" /> Profile
-      </DropdownMenuItem>
-      <DropdownMenuItem>
-        <LogOut className="w-4 h-4 mr-2" /> Logout
-      </DropdownMenuItem>
-    </DropdownMenuContent>
-  </DropdownMenu>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="p-2 flex items-center justify-center rounded-full hover:bg-gray-100">
+                  <Menu className="w-6 h-6 text-gray-700" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => setShowHistory(true)}>
+                  <History className="w-4 h-4 mr-2" /> History
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <User className="w-4 h-4 mr-2" /> Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={async () => {
+                  await fetch("/api/auth/logout", { method: "POST" });
+                  router.push("/login");
+                }}>
+                  <LogOut className="w-4 h-4 mr-2" /> Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </header>
 
