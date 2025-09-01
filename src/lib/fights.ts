@@ -36,11 +36,12 @@ async function applyBetPayout(bet: typeof bets.$inferSelect, payoutAmount: numbe
     userId: bet.userId,
     type: "payout",
     amount: String(payoutAmount),
+    eventId: bet.eventId
   });
 }
 
 // Admin: start a new fight
-export async function createNewFight(name: string="") {
+export async function createNewFight(name: string="", eventId: number) {
   const currentFight = await getCurrentFight();
 
   if (currentFight && currentFight.status !== "closed") {
@@ -52,6 +53,7 @@ export async function createNewFight(name: string="") {
     .insert(fights)
     .values({
       name: name,
+      eventId: eventId,
       status: "open",
     })
     .returning();
@@ -180,6 +182,7 @@ export async function cancelCurrentFight() {
         userId: bet.userId,
         type: "refund",
         amount: bet.amount,
+        eventId: bet.eventId
       });
 
       // Optionally mark bet as settled or cancelled
@@ -236,4 +239,15 @@ export async function getCurrentFight() {
     tally,
     payout
   };
+}
+
+export async function countFights(eventId: number) {
+  const [row] = await db
+    .select({
+      count: sql<number>`COUNT(*)`.mapWith(Number),
+    })
+    .from(fights)
+    .where(eq(fights.eventId, eventId));
+
+  return row?.count ?? 0;
 }

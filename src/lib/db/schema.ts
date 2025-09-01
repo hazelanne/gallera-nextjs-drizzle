@@ -18,8 +18,20 @@ export const users = pgTable("users", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const events = pgTable("events", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  status: text("status").default("open").notNull(),
+  fightCount: integer("fight_count").default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const fights = pgTable("fights", {
   id: serial("id").primaryKey(),
+  eventId: integer("event_id")
+    .notNull()
+    .references(() => events.id),
   name: text("name").notNull(),               // e.g. fighter names or fight label
   status: text("status").default("open").notNull(),  
   winningSide: text("winning_side"),         // set when fight is settled
@@ -34,7 +46,10 @@ export const bets = pgTable("bets", {
     .references(() => users.id),
   fightId: integer("fight_id")
     .notNull()
-    .references(() => fights.id, { onDelete: "cascade" }),
+    .references(() => fights.id),
+  eventId: integer("event_id")
+    .notNull()
+    .references(() => events.id),
   betChoice: text("bet_choice").notNull(),
   amount: numeric("amount").notNull(),
   settled: boolean("settled").default(false).notNull(),
@@ -47,7 +62,8 @@ export type TransactionType =
   | "withdrawal"
   | "bet"
   | "payout"
-  | "refund";
+  | "refund"
+  | "profit";
 
 export const transactions = pgTable("transactions", {
   id: serial("id").primaryKey(),
@@ -56,13 +72,12 @@ export const transactions = pgTable("transactions", {
     .references(() => users.id),
   type: text("type").$type<TransactionType>().notNull(),
   amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
+  eventId: integer("event_id").references(() => events.id),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const treasury = pgTable("treasury", {
   id: serial("id").primaryKey(),
-  availableCredits: integer("available_credits").notNull().default(0),
-  outstandingBets: integer("outstanding_bets").notNull().default(0),
-  liabilities: integer("liabilities").notNull().default(0),
+  balance: numeric("amount", { precision: 12, scale: 2 }).notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

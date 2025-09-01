@@ -3,19 +3,20 @@
 import { useState } from "react";
 import { Menu } from "lucide-react";
 import FightControlsTab from "@/components/admin/FightControlsTab";
+import EventsControlsTab from "@/components/admin/EventsControlsTab";
 import FundsTab from "@/components/admin/FundsTab";
 
 export default function AdminPanel() {
-  const [activeTab, setActiveTab] = useState<"fights" | "funds">(
-    "fights"
+  const [activeTab, setActiveTab] = useState<"fights" | "events" | "funds">(
+    "events"
   );
   const [menuOpen, setMenuOpen] = useState(false);
 
   const tabs = [
-    { key: "fights", label: "Fight Controls" },
+    { key: "events", label: "Event" },
+    { key: "fights", label: "Fights" },
     { key: "funds", label: "Funds" },
   ] as const;
-
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
@@ -75,6 +76,7 @@ export default function AdminPanel() {
       {/* Tab content */}
       <div className="flex justify-center">
         <div className="w-full max-w-4xl bg-white rounded-2xl shadow p-6">
+          {activeTab === "events" && <EventsControlsTab />}
           {activeTab === "fights" && <FightControlsTab />}
           {activeTab === "funds" && <FundsTab />}
         </div>

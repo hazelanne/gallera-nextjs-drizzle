@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { verifyToken } from "@/lib/auth";
-import { getTodayFinancials, getTotalFinancials } from "@/lib/treasury";
+import { getTotalBalance } from "@/lib/funds";
 
 export async function GET() {
   const token = cookies().get("auth-token")?.value;
@@ -14,16 +14,12 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
-    const [today, overall] = await Promise.all([
-      getTodayFinancials(),
-      getTotalFinancials(),
-    ]);
-
-    return NextResponse.json({ today, overall });
+    const overall = await getTotalBalance();
+    return NextResponse.json({ overall });
   } catch (err) {
-    console.error("Error fetching treasury data:", err);
+    console.error("Error fetching funds data:", err);
     return NextResponse.json(
-      { error: "Failed to fetch treasury data" },
+      { error: "Failed to fetch funds data" },
       { status: 500 }
     );
   }

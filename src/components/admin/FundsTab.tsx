@@ -1,32 +1,17 @@
+"use client";
+
 import { useEffect, useState } from "react";
 
-interface TodaySummary {
-  todayInflow: string;
-  todayOutflow: string;
-  todayNet: string;
-}
-
-interface OverallSummary {
-  totalInflow: string;
-  totalOutflow: string;
-  net: string;
-}
-
-interface FundsSummary {
-  today: TodaySummary;
-  overall: OverallSummary;
-}
-
 export default function FundsTab() {
-  const [summary, setSummary] = useState<FundsSummary | null>(null);
+  const [balance, setBalance] = useState<number>(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchFunds() {
       try {
-        const res = await fetch("/api/treasury");
+        const res = await fetch("/api/funds");
         const data = await res.json();
-        setSummary(data);
+        setBalance(parseFloat(data.overall));
       } catch (err) {
         console.error("Failed to fetch house funds:", err);
       } finally {
@@ -38,71 +23,45 @@ export default function FundsTab() {
   }, []);
 
   if (loading) {
-    return <p className="text-gray-500">Loading funds…</p>;
-  }
-
-  if (!summary) {
-    return <p className="text-red-500">Failed to load funds summary.</p>;
-  }
-
-  const renderBlock = (
-    label: string,
-    inflow: string,
-    outflow: string,
-    net: string
-  ) => {
-    const netValue = parseFloat(net);
-
     return (
-      <div className="space-y-2">
-        <h3 className="text-lg font-semibold">{label}</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-4 bg-white shadow rounded-lg">
-            <p className="text-gray-500">Inflow</p>
-            <p className="text-2xl font-bold">{parseFloat(inflow).toFixed(2)}</p>
-          </div>
-
-          <div className="p-4 bg-white shadow rounded-lg">
-            <p className="text-gray-500">Outflow</p>
-            <p className="text-2xl font-bold">
-              {parseFloat(outflow).toFixed(2)}
-            </p>
-          </div>
-
-          <div
-            className={`p-4 shadow rounded-lg ${
-              netValue >= 0 ? "bg-green-100" : "bg-red-100"
-            }`}
-          >
-            <p className="text-gray-500">Net</p>
-            <p
-              className={`text-2xl font-bold ${
-                netValue >= 0 ? "text-green-700" : "text-red-700"
-              }`}
-            >
-              {netValue.toFixed(2)}
-            </p>
-          </div>
-        </div>
+      <div className="flex items-center justify-center h-32 text-gray-500">
+        Loading funds…
       </div>
     );
-  };
+  }
 
   return (
-    <div className="space-y-8">
-      <h2 className="text-xl font-semibold">Funds Summary</h2>
-      {renderBlock(
-        "Today",
-        summary.today.todayInflow,
-        summary.today.todayOutflow,
-        summary.today.todayNet
-      )}
-      {renderBlock(
-        "Overall",
-        summary.overall.totalInflow,
-        summary.overall.totalOutflow,
-        summary.overall.net
-      )}
+    <div className="space-y-6">
+      <h2 className="text-2xl font-semibold">Funds</h2>
+
+      {/* Summary card */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div
+          className={`p-6 rounded-2xl shadow-md border ${
+            balance >= 0
+              ? "bg-green-50 border-green-200"
+              : "bg-red-50 border-red-200"
+          }`}
+        >
+          <p className="text-sm font-medium text-gray-500">House Balance</p>
+          <p
+            className={`mt-2 text-3xl font-bold ${
+              balance >= 0 ? "text-green-700" : "text-red-700"
+            }`}
+          >
+            {balance.toFixed(2)}
+          </p>
+        </div>
+
+        {/* Placeholder for future features */}
+        <div className="p-6 rounded-2xl shadow-md border bg-white flex items-center justify-center text-gray-400">
+          (Future: Modify user funds)
+        </div>
+
+        <div className="p-6 rounded-2xl shadow-md border bg-white flex items-center justify-center text-gray-400">
+          (Future: Deposit / Withdraw)
+        </div>
+      </div>
     </div>
   );
 }

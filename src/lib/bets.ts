@@ -1,7 +1,8 @@
 import { db } from "./db/client";
-import { bets, users, fights } from "./db/schema";
+import { bets, users, fights, transactions } from "./db/schema";
 import { and, eq, sql, gte } from "drizzle-orm";
 import { getCurrentFight } from "@/lib/fights";
+import { recordTransaction } from "@/lib/funds";
 import { broadcast } from "@/lib/ws";
 
 export async function placeBet(
@@ -33,13 +34,22 @@ export async function placeBet(
       .returning();
 
     // 5. Insert bet
-    await tx.insert(bets).values({
+    const [bet] = await tx.insert(bets).values({
       userId: userId,
       fightId: fightId,
+      eventId: fight.eventId,
       betChoice: choice,
       amount: String(amount),
-    });
+    }).returning();
 
+    // 6. Record bet transaction
+    await tx.insert(transactions).values({
+      userId: bet.userId,
+      type: "bet",
+      amount: bet.amount,
+      eventId: fight.eventId
+    });
+     
     newBalance = parseFloat(updatedUser.credits);
   });
 

@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { db } from "@/lib/db/client";
-import { users } from "@/lib/db/schema";
+import { users, treasury } from "@/lib/db/schema";
 import bcrypt from "bcryptjs";
 
 // typed hash helper
@@ -24,6 +24,10 @@ async function seed(): Promise<void> {
     { username: "player1", passwordHash: player1Pass, role: "player", credits: "1000" },
     { username: "player2", passwordHash: player2Pass, role: "player", credits: "1000" },
   ]);
+
+  await db.insert(treasury).values(
+    { balance: "0" }
+  );
 
   console.log("✅ Seeding done");
 }

@@ -34,7 +34,7 @@ export default function UserMainScreen() {
       .then((r) => r.json())
       .then((j) => setBalance(j.balance))
       .catch(() => {});
-    fetch("/api/fights/info")
+    fetch("/api/fights/current")
       .then((r) => r.json())
       .then((j) => {
         setCurrentFight(j);
