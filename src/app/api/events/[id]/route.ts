@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
-import { startEvent, getAllEvents } from "@/lib/events";
+import { getEvent, updateStatus } from "@/lib/events";
 import { cookies } from "next/headers";
 import { verifyToken } from "@/lib/auth";
 
-export async function GET(req: Request) {
+
+export async function GET(req: Request, { params }: { params: { id: number } }) {
   const token = cookies().get("auth-token")?.value;
   if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -13,11 +14,12 @@ export async function GET(req: Request) {
   if (!t.isAdmin)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const events = await getAllEvents();
-  return NextResponse.json(events);
+  const { id } = params;
+  const event = await getEvent(id);
+  return NextResponse.json(event);
 }
 
-export async function POST(req: Request) {
+export async function PUT(req: Request, { params }: { params: { id: number } }) {
   const token = cookies().get("auth-token")?.value;
   if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -27,9 +29,9 @@ export async function POST(req: Request) {
   if (!t.isAdmin)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { name } = await req.json();
-  if (!name) return NextResponse.json({ error: "Missing name" }, { status: 400 });
+  const { id } = params;
+  const { status } = await req.json();
 
-  const event = await startEvent(name);
-  return NextResponse.json(event);
+  const result = await updateStatus(id, status);
+  return NextResponse.json(result);
 }

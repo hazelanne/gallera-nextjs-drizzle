@@ -11,12 +11,17 @@ export async function GET() {
   if (!currentEvent)
     return NextResponse.json({ error: "No current event" }, { status: 500 });
 
-  const currentBalance = await getEventBalance(currentEvent.id);
-  const currentFightCount = await countFights(currentEvent.id);
+  try {
+    const currentBalance = await getEventBalance(currentEvent.id);
+    const currentFightCount = await countFights(currentEvent.id);
 
-  return NextResponse.json({
-    ...currentEvent, 
-    fightCount: currentFightCount,
-    balance: currentBalance
-  });
+    return NextResponse.json({
+      ...currentEvent, 
+      fightCount: currentFightCount,
+      balance: currentBalance
+    });
+
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message }, { status: 400 });
+  }
 }

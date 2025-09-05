@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { endCurrentEvent } from "@/lib/events";
+import { getFight } from "@/lib/fights";
 import { cookies } from "next/headers";
 import { verifyToken } from "@/lib/auth";
 
-export async function POST(req: Request) {
+export async function GET(req: Request, { params }: { params: { id: number } }) {
   const token = cookies().get("auth-token")?.value;
   if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -13,5 +13,7 @@ export async function POST(req: Request) {
   if (!t.isAdmin)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  await endCurrentEvent();
+  const { id } = params;
+  const fight = await getFight(id);
+  return NextResponse.json(fight);
 }

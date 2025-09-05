@@ -1,6 +1,7 @@
 import { db } from "@/lib/db/client";
-import { fights, bets, users, transactions } from "@/lib/db/schema";
-import { or, eq, ne, asc, desc, sql } from "drizzle-orm";
+import { events, fights, bets, users, transactions } from "@/lib/db/schema";
+import { getCurrentEvent } from "@/lib/events";
+import { and, or, eq, ne, asc, desc, sql } from "drizzle-orm";
 import { broadcast } from "@/lib/ws";
 
 const houseCut = 0.9;
@@ -41,7 +42,7 @@ async function applyBetPayout(bet: typeof bets.$inferSelect, payoutAmount: numbe
 }
 
 // Admin: start a new fight
-export async function createNewFight(name: string="", eventId: number) {
+export async function createNewFight(eventId: number, aSide: string, bSide: string) {
   const currentFight = await getCurrentFight();
 
   if (currentFight && currentFight.status !== "closed") {
@@ -52,7 +53,8 @@ export async function createNewFight(name: string="", eventId: number) {
   const [fight] = await db
     .insert(fights)
     .values({
-      name: name,
+      aSide: aSide,
+      bSide: bSide,
       eventId: eventId,
       status: "open",
     })
@@ -68,9 +70,19 @@ export async function createNewFight(name: string="", eventId: number) {
   return fight;
 }
 
+export async function getFight(id: number) {
+  const fight = await db.query.fights.findFirst({
+    where: (f) => and(
+      eq(f.id, id)
+    )
+  });
+
+  return fight;
+}
+
 // Admin: start fight (close betting, move to 'started')
-export async function startCurrentFight() {
-  const currentFight = await getCurrentFight();
+export async function startFight(fightId: number) {
+  const currentFight = await getFight(fightId);
   if (!currentFight) return null;
 
   if (currentFight.status !== "open") {
@@ -81,7 +93,7 @@ export async function startCurrentFight() {
   const [updated] = await db
     .update(fights)
     .set({ status: "started" })
-    .where(eq(fights.id, currentFight.fightId))
+    .where(eq(fights.id, currentFight.id))
     .returning();
 
   broadcast({ 
@@ -95,11 +107,11 @@ export async function startCurrentFight() {
 }
 
 // Admin: end fight (finish fight and payouts)
-export async function endCurrentFight(winner: string) {
+export async function endFight(fightId: number, winner: string) {
   const result = await db.transaction(async (tx) => {
     // 1. Fetch current fight
     const currentFight = await tx.query.fights.findFirst({
-      where: (f) => or(eq(f.status, "open"), eq(f.status, "started")),
+      where: (f) => eq(f.id, fightId),
       orderBy: (f) => desc(f.createdAt),
     });
 
@@ -156,19 +168,12 @@ export async function endCurrentFight(winner: string) {
 }
 
 // Admin: cancel fight
-export async function cancelCurrentFight() {
-  const currentFight = await getCurrentFight();
-  if (!currentFight) return null;
-
-  if (currentFight.status === "closed" || currentFight.status === "cancelled") {
-    return currentFight;
-  }
-
+export async function cancelFight(fightId: number) {
   // Start transaction
   const result = await db.transaction(async (tx) => {
     // 1. Fetch all bets for the fight
     const fightBets = await tx.query.bets.findMany({
-      where: (b) => eq(b.fightId, currentFight.fightId),
+      where: (b) => eq(b.fightId, fightId),
     });
 
     // 2. Refund each bet
@@ -194,7 +199,7 @@ export async function cancelCurrentFight() {
     // 3. Cancel the fight
     const [updatedFight] = await tx.update(fights)
       .set({ status: "cancelled" })
-      .where(eq(fights.id, currentFight.fightId))
+      .where(eq(fights.id, fightId))
       .returning();
 
     return updatedFight;
@@ -213,8 +218,14 @@ export async function cancelCurrentFight() {
 
 // Fetch the current open fight
 export async function getCurrentFight() {
+  const event = await getCurrentEvent();
+  if (!event) return null;
+
   const fight = await db.query.fights.findFirst({
-    where: (f) => or(eq(f.status, "open"), eq(f.status, "started")),
+    where: (f) => and(
+      eq(f.eventId, event.id),
+      or(eq(f.status, "open"), eq(f.status, "started"))
+    ),
     orderBy: (f) => desc(f.createdAt)
   });
 
@@ -251,3 +262,23 @@ export async function countFights(eventId: number) {
 
   return row?.count ?? 0;
 }
+
+export async function getFights(eventId: number, page: number = 0, limit: number = 10) {
+  // Get fights for this page
+  const fights = await db.query.fights.findMany({
+    where: (f) => eq(f.eventId, eventId),
+    orderBy: (f, { desc }) => [desc(f.id)], // newest first
+    limit,
+    offset: page * limit,
+  });
+
+  // Check if more fights exist beyond this page
+  const totalCount = await db.query.fights.findMany({
+    where: (f) => eq(f.eventId, eventId),
+    columns: { id: true }, // only need ids
+  });
+  const hasMore = totalCount.length > (page + 1) * limit;
+
+  return { fights, hasMore };
+}
+

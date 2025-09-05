@@ -32,8 +32,10 @@ export const fights = pgTable("fights", {
   eventId: integer("event_id")
     .notNull()
     .references(() => events.id),
-  name: text("name").notNull(),               // e.g. fighter names or fight label
-  status: text("status").default("open").notNull(),  
+  // fightNumber: integer("fight_number"),
+  aSide: text("a_side").notNull().default("Side A"),
+  bSide: text("b_side").notNull().default("Side B"),
+  status: text("status").default("open").notNull(), 
   winningSide: text("winning_side"),         // set when fight is settled
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
