@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import jwt from "jsonwebtoken";
-import AdminPanel from "@/components/admin/AdminPanel";
+import AdminScreen from "@/components/admin/AdminScreen";
 
 const SECRET = process.env.JWT_SECRET || "dev-secret";
 
@@ -22,5 +22,5 @@ export default async function AdminPage() {
     redirect("/"); // not admin, send back to main screen
   }
 
-  return <AdminPanel />;
+  return <AdminScreen />;
 }

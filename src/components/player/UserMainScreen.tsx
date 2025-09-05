@@ -15,8 +15,14 @@ type Fight = {
   payout: { DEHADO: number; LIYAMADO: number; DRAW: number };
 };
 
+type Event = {
+  eventId: number;
+  name: string;
+};
+
 export default function UserMainScreen() {
   const [balance, setBalance] = useState<number>(0);
+  const [currentEvent, setCurrentEvent] = useState<Event | null>(null);
   const [currentFight, setCurrentFight] = useState<Fight | null>(null);
   const [tally, setTally] = useState<{ [key: string]: number }>({});
   const [bets, setBets] = useState<{ [key: string]: number }>({});
@@ -34,6 +40,11 @@ export default function UserMainScreen() {
       .then((r) => r.json())
       .then((j) => setBalance(j.balance))
       .catch(() => {});
+    fetch("/api/events/current")
+      .then((r) => r.json())
+      .then((j) => {
+        setCurrentEvent(j);
+      });
     fetch("/api/fights/current")
       .then((r) => r.json())
       .then((j) => {
