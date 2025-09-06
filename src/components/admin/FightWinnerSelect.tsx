@@ -12,8 +12,16 @@ export default function FightWinnerSelect({ isOpen, onClose, onResult } : FightW
   const [pendingResult, setPendingResult] = useState<null | "LIYAMADO" | "DRAW" | "DEHADO">(null);
   const [countdown, setCountdown] = useState(0);
 
-  if (!isOpen)
-    return null;
+  useEffect(() => {
+    if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+    if (countdown === 0 && pendingResult) {
+      onResult(pendingResult);
+      setPendingResult(null);
+    }
+  }, [countdown, pendingResult]);
 
   function chooseResult(result: "LIYAMADO" | "DRAW" | "DEHADO") {
     setPendingResult(result);
@@ -25,6 +33,7 @@ export default function FightWinnerSelect({ isOpen, onClose, onResult } : FightW
       onResult(pendingResult);
       setPendingResult(null);
       setCountdown(0);
+      onClose();
     }
   }
 
@@ -33,16 +42,8 @@ export default function FightWinnerSelect({ isOpen, onClose, onResult } : FightW
     setCountdown(0);
   }
 
-  useEffect(() => {
-    if (countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-      return () => clearTimeout(timer);
-    }
-    if (countdown === 0 && pendingResult) {
-      onResult(pendingResult);
-      setPendingResult(null);
-    }
-  }, [countdown, pendingResult]);
+  if (!isOpen)
+    return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
