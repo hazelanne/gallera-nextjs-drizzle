@@ -1,6 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 
 interface FightWinnerSelectProps {
   isOpen: boolean;
@@ -8,8 +11,14 @@ interface FightWinnerSelectProps {
   onResult: (winner: string) => void;
 }
 
-export default function FightWinnerSelect({ isOpen, onClose, onResult } : FightWinnerSelectProps) {
-  const [pendingResult, setPendingResult] = useState<null | "LIYAMADO" | "DRAW" | "DEHADO">(null);
+export default function FightWinnerSelect({
+  isOpen,
+  onClose,
+  onResult,
+}: FightWinnerSelectProps) {
+  const [pendingResult, setPendingResult] = useState<
+    null | "LIYAMADO" | "DRAW" | "DEHADO"
+  >(null);
   const [countdown, setCountdown] = useState(0);
 
   useEffect(() => {
@@ -21,7 +30,7 @@ export default function FightWinnerSelect({ isOpen, onClose, onResult } : FightW
       onResult(pendingResult);
       setPendingResult(null);
     }
-  }, [countdown, pendingResult]);
+  }, [countdown, pendingResult, onResult]);
 
   function chooseResult(result: "LIYAMADO" | "DRAW" | "DEHADO") {
     setPendingResult(result);
@@ -42,41 +51,48 @@ export default function FightWinnerSelect({ isOpen, onClose, onResult } : FightW
     setCountdown(0);
   }
 
-  if (!isOpen)
-    return null;
+  const progressColor =
+    pendingResult === "LIYAMADO"
+      ? "bg-red-600"
+      : pendingResult === "DRAW"
+      ? "bg-green-600"
+      : pendingResult === "DEHADO"
+      ? "bg-blue-600"
+      : "bg-indigo-600";
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-2xl shadow-xl w-[90%] max-w-md space-y-6">
-        <h2 className="text-lg font-bold text-center">Declare Result</h2>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader className="flex items-center justify-between">
+          <DialogTitle>Declare Result</DialogTitle>
+        </DialogHeader>
 
         {/* If no result picked yet → show options */}
         {!pendingResult ? (
-          <div className="grid grid-cols-3 gap-3">
-            <button
+          <div className="grid grid-cols-3 gap-3 mt-4">
+            <Button
+              variant="destructive"
               onClick={() => chooseResult("LIYAMADO")}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
             >
               LIYAMADO
-            </button>
-            <button
+            </Button>
+            <Button
+              className="bg-green-600 hover:bg-green-700"
               onClick={() => chooseResult("DRAW")}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
             >
               DRAW
-            </button>
-            <button
+            </Button>
+            <Button
+              className="bg-blue-600 hover:bg-blue-700"
               onClick={() => chooseResult("DEHADO")}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             >
               DEHADO
-            </button>
+            </Button>
           </div>
-          
         ) : (
-          <>
+          <div className="space-y-4 mt-4">
             {/* Pending countdown section */}
-            <p className="mb-3 text-center">
+            <p className="text-center">
               Declaring{" "}
               <span
                 className={
@@ -92,38 +108,27 @@ export default function FightWinnerSelect({ isOpen, onClose, onResult } : FightW
               in {countdown} seconds...
             </p>
 
-            {/* Countdown bar */}
-            <div className="w-full bg-gray-300 h-2 rounded-full mb-3">
-              <div
-                className="h-2 rounded-full bg-indigo-600 transition-all"
-                style={{ width: `${(countdown / 10) * 100}%` }}
-              />
-            </div>
+            {/* Countdown progress */}
+            <Progress
+              value={(countdown / 10) * 100}
+              className="h-2"
+            />
 
             <div className="flex gap-3">
-              <button
+              <Button
+                variant="secondary"
+                className="flex-1"
                 onClick={undoResult}
-                className="flex-1 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
               >
                 Undo
-              </button>
-              <button
-                onClick={confirmResult}
-                className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-              >
+              </Button>
+              <Button className="flex-1" onClick={confirmResult}>
                 Confirm Now
-              </button>
+              </Button>
             </div>
-          </>
+          </div>
         )}
-
-        <button
-          onClick={onClose}
-          className="w-full px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500"
-        >
-          Close
-        </button>
-      </div>
-    </div>
-  )
+      </DialogContent>
+    </Dialog>
+  );
 }

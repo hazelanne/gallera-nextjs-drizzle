@@ -1,7 +1,7 @@
 import { db } from "@/lib/db/client";
 import { events, fights, bets, users, transactions } from "@/lib/db/schema";
 import { getCurrentEvent } from "@/lib/events";
-import { and, or, eq, ne, asc, desc, sql } from "drizzle-orm";
+import { and, or, eq, ne, asc, desc, sql, isNotNull } from "drizzle-orm";
 import { broadcast } from "@/lib/ws";
 
 const houseCut = 0.9;
@@ -42,7 +42,7 @@ async function applyBetPayout(bet: typeof bets.$inferSelect, payoutAmount: numbe
 }
 
 // Admin: start a new fight
-export async function createNewFight(eventId: number, aSide: string, bSide: string) {
+export async function createNewFight(eventId: number, aSideId: number, bSideId: number) {
   const currentFight = await getCurrentFight();
 
   if (currentFight && currentFight.status !== "closed") {
@@ -53,8 +53,8 @@ export async function createNewFight(eventId: number, aSide: string, bSide: stri
   const [fight] = await db
     .insert(fights)
     .values({
-      aSide: aSide,
-      bSide: bSide,
+      aTeamId: aSideId,
+      bTeamId: bSideId,
       eventId: eventId,
       status: "open",
     })
@@ -282,3 +282,31 @@ export async function getFights(eventId: number, page: number = 0, limit: number
   return { fights, hasMore };
 }
 
+async function getFightsWinners(eventId: number) {
+  const results = await db
+    .select({
+      winningTeam: sql<number>`
+        CASE 
+          WHEN ${fights.winningSide} = 'LIYAMADO' THEN ${fights.aTeamId}
+          WHEN ${fights.winningSide} = 'DEHADO' THEN ${fights.bTeamId}
+        END
+      `,
+      wins: sql<number>`COUNT(*)`,
+    })
+    .from(fights)
+    .where(
+      and(
+        eq(fights.eventId, eventId),
+        eq(fights.status, "closed"),
+        isNotNull(fights.winningSide)
+      )
+    )
+    .groupBy(sql`
+      CASE 
+        WHEN ${fights.winningSide} = 'LIYAMADO' THEN ${fights.aTeamId}
+        WHEN ${fights.winningSide} = 'DEHADO' THEN ${fights.bTeamId}
+      END
+    `);
+
+  return results;
+}

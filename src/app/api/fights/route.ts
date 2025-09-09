@@ -40,8 +40,10 @@ export async function POST(req: Request) {
   if (!t.isAdmin)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { eventId, aSide, bSide } = await req.json();
+  const { eventId, aSideId, bSideId } = await req.json();
+  if (!eventId || !aSideId || !bSideId) 
+    return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
 
-  const fight = await createNewFight(eventId, aSide, bSide);
+  const fight = await createNewFight(eventId, aSideId, bSideId);
   return NextResponse.json(fight);
 }

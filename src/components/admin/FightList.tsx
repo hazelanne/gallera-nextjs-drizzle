@@ -1,23 +1,32 @@
+import { useMemo } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Fight } from "@/components/admin/types";
+import { Fight, Team } from "@/components/admin/types";
 
 interface FightListProps {
   fights: Fight[],
+  teams: Team[],
   page: number,
   hasMore: boolean,
   onPageChange: (page: number) => void;
 }
 
-export default function FightList({ fights, page, hasMore, onPageChange } : FightListProps) {
+export default function FightList({ fights, teams, page, hasMore, onPageChange } : FightListProps) {
+  const teamsMap = useMemo(() => {
+    return Object.fromEntries(
+      teams.map(team => [team.id, team])
+    );
+  }, [teams]);
+
   return (
     <div className="p-4">
-      <div className="overflow-x-auto rounded-lg shadow">
+      <div className="overflow-x-auto">
         <table className="min-w-full text-sm text-left border-collapse">
           <thead className="bg-gray-100 text-gray-700 uppercase text-xs">
             <tr>
-              <th className="px-4 py-2 text-red-600">Liyamado</th>
-              <th className="px-4 py-2 text-blue-600">Dehado</th>
-              <th className="px-4 py-2">Result</th>
+              <th className="px-4 py-2">#</th>
+              <th className="px-4 py-2 text-sm font-medium text-red-600">Liyamado</th>
+              <th className="px-4 py-2 text-sm font-medium text-blue-600">Dehado</th>
+              <th className="px-4 py-2 text-sm font-medium text-gray-600">Result</th>
             </tr>
           </thead>
           <tbody className="divide-y">
@@ -62,11 +71,14 @@ export default function FightList({ fights, page, hasMore, onPageChange } : Figh
 
                 return (
                   <tr key={fight.id} className="hover:bg-gray-50">
+                    <td className="px-2 py-2 font-medium">
+                      { fight.fightNumber }
+                    </td>
                     <td className="px-4 py-2 font-medium text-red-600">
-                      {fight.aSide}
+                      { teamsMap[fight.aTeamId]?.name }
                     </td>
                     <td className="px-4 py-2 font-medium text-blue-600">
-                      {fight.bSide}
+                      { teamsMap[fight.bTeamId]?.name }
                     </td>
                     <td className="px-4 py-2">{resultEl}</td>
                   </tr>

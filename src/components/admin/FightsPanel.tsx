@@ -1,16 +1,22 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { PlayCircle, Flag, XCircle, DoorOpen } from "lucide-react";
-import { Fight } from "@/components/admin/types";
+import { useState, useEffect, useMemo } from "react";
+import { PlayCircle, Flag, XCircle, DoorOpen, ChevronsUpDown, Check } from "lucide-react";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Command, CommandInput, CommandList, CommandEmpty, CommandItem } from "@/components/ui/command";
+import { Fight, Team } from "@/components/admin/types";
 import FightList from "@/components/admin/FightList";
 import FightWinnerSelect from "@/components/admin/FightWinnerSelect";
+import { cn } from "@/lib/utils"
 
 type Action = "open" | "start" | "cancel" | "end";
 
-export default function FightsPanel({ eventId } : { eventId: number}) {
+export default function FightsPanel({ eventId, teams } : { eventId: number, teams: Team[]}) {
   const [loading, setLoading] = useState(false);
   const [showDeclareModal, setShowDeclareModal] = useState(false);
+  const [showOpenFightModal, setShowOpenFightModal] = useState(false);
   const [fights, setFights] = useState<Fight[]>([]);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
@@ -83,17 +89,14 @@ export default function FightsPanel({ eventId } : { eventId: number}) {
     }
   }
 
-  async function handleOpenFight() {
-    const sideA = prompt("Enter Side A name:") || "Side A";
-    const sideB = prompt("Enter Side B name:") || "Side B";
-
+  async function handleOpenFight(aSideId: number, bSideId: number) {
     const body = {
       "eventId": eventId,
-      "aSide": sideA,
-      "bSide": sideB
+      "aSideId": aSideId,
+      "bSideId": bSideId
     }
 
-    await handleAction("open", body);
+    handleAction("open", body);
   }
 
   function handleCancel() {
@@ -117,7 +120,7 @@ export default function FightsPanel({ eventId } : { eventId: number}) {
           {/* Action buttons (latest fight only) */}
           <div className="grid grid-cols-4 gap-2">
             <button
-              onClick={() => handleOpenFight()}
+              onClick={() => setShowOpenFightModal(true)}
               disabled={loading || currentFight !== null && (currentFight.status === "started" || currentFight.status === "open")}
               className="flex flex-col items-center justify-center p-2 bg-yellow-600 text-white rounded-2xl shadow hover:bg-yellow-700 disabled:opacity-50"
             >
@@ -151,15 +154,188 @@ export default function FightsPanel({ eventId } : { eventId: number}) {
           </div>
         </div>
 
-        <FightList fights={fights} page={page} hasMore={hasMore} onPageChange={setPage} />
+        { fights.length ? (
+          <FightList fights={fights} teams={teams} page={page} hasMore={hasMore} onPageChange={setPage} />
+        ) : (
+          <div className="p-4 flex">
+            <p className="text-gray-500 text-sm">Click the Open button (orange) to open a fight up for betting.</p>
+          </div>
+        )}
       </div>
 
-      {/* Declare modal */}
+      {/* Open Fight modal */}
+      <OpenFightDialog 
+        isOpen={showOpenFightModal} 
+        onOpenChange={setShowOpenFightModal}
+        teams={teams} 
+        onOpenFight={(aSideId, bSideId) => handleOpenFight(aSideId, bSideId)} 
+      />
+
+      {/* Declare Fight Winner modal */}
       <FightWinnerSelect 
         isOpen={showDeclareModal} 
         onClose={() => setShowDeclareModal(false)} 
         onResult={(winner) => handleResult(winner)}
       />
     </div>
+  );
+}
+
+interface OpenFightDialogProps {
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  teams: Team[];
+  onOpenFight: (aSideId: number, bSideId: number) => void;
+}
+
+function OpenFightDialog({
+  isOpen,
+  onOpenChange,
+  teams,
+  onOpenFight,
+}: OpenFightDialogProps) {
+  const [openA, setOpenA] = useState<boolean>(false)
+  const [openB, setOpenB] = useState<boolean>(false)
+  const [aSide, setASide] = useState<String>("");
+  const [bSide, setBSide] = useState<String>("");
+  const [aSideId, setASideId] = useState<number | null>(null);
+  const [bSideId, setBSideId] = useState<number | null>(null);
+
+  // Filter teams based on input
+  const filteredTeamsA = useMemo(
+    () =>
+      teams.filter((team) =>
+        team.name.toLowerCase().includes(aSide.toLowerCase())
+      ),
+    [aSide, teams]
+  );
+
+  const filteredTeamsB = useMemo(
+    () =>
+      teams.filter((team) =>
+        team.name.toLowerCase().includes(bSide.toLowerCase())
+      ),
+    [bSide, teams]
+  );
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Open New Fight</DialogTitle>
+        </DialogHeader>
+
+        <div className="grid grid-cols-2 gap-4">
+          {/* Side A */}
+          <div>
+            <label className="block text-sm font-medium mb-1 text-red-600">
+              LIYAMADO
+            </label>
+            <Popover open={openA} onOpenChange={setOpenA}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  className="w-full justify-between"
+                >
+                  {aSide || "(Select)"}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[200px] p-0">
+                <Command>
+                  <CommandInput placeholder="Search team..." />
+                  <CommandList>
+                    <CommandEmpty>No teams found.</CommandEmpty>
+                    {teams.map((team) => (
+                      <CommandItem
+                        key={team.id}
+                        disabled={team.name === bSide}
+                        value={team.name.toString()}
+                        onSelect={(val) => {
+                          setASide(val)
+                          setASideId(team.id)
+                          setOpenA(false)
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            aSide === team.name ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        {team.name}
+                      </CommandItem>
+                    ))}
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          {/* Side B */}
+          <div>
+            <label className="block text-sm font-medium mb-1 text-blue-600">
+              DEHADO
+            </label>
+            <Popover open={openB} onOpenChange={setOpenB}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  className="w-full justify-between"
+                >
+                  {bSide || "(Select)"}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[200px] p-0">
+                <Command>
+                  <CommandInput placeholder="Search team..." />
+                  <CommandList>
+                    <CommandEmpty>No teams found.</CommandEmpty>
+                    {teams.map((team) => (
+                      <CommandItem
+                        key={team.id}
+                        value={team.name.toString()}
+                        disabled={team.name === aSide}
+                        onSelect={(val) => {
+                          setBSide(val)
+                          setBSideId(team.id)
+                          setOpenB(false)
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            bSide === team.name ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        {team.name}
+                      </CommandItem>
+                    ))}
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+          </div>
+        </div>
+
+        <DialogFooter className="mt-4">
+          <Button
+            disabled={!aSide || !bSide}
+            onClick={() => {
+              onOpenFight(aSideId!, bSideId!);
+              setASide("");
+              setBSide("");
+              onOpenChange(false);
+            }}
+            className="w-full bg-yellow-600 hover:bg-yellow-700"
+          >
+            Open Fight
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

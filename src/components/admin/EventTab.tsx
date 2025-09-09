@@ -2,22 +2,51 @@
 
 import { useEffect, useState } from "react";
 import { StopCircle, PlusCircle } from "lucide-react";
+import { Team, Event } from "@/components/admin/types";
 import FightsPanel from "./FightsPanel";
+import TeamsPanel from "./TeamsPanel";
 
 export default function EventTab() {
-  const [currentEvent, setCurrentEvent] = useState<any>(null);
-
-  async function fetchCurrentEvent() {
-    const res = await fetch("/api/events/current");
-    if (res.ok) {
-      const data = await res.json();
-      setCurrentEvent(data);
-    }
-  }
+  const [loading, setLoading] = useState(true);
+  const [currentEvent, setCurrentEvent] = useState<Event | null>(null);
+  const [teams, setTeams] = useState<Team[]>([]);
 
   useEffect(() => {
     fetchCurrentEvent();
   }, []);
+
+  useEffect(() => {
+    async function fetchRegisteredTeams(eventId: number) {
+      try {
+        const res = await fetch(`/api/events/${eventId}/teams`);
+        if (!res.ok) throw new Error("Failed to load teams");
+        const teams = await res.json();
+
+        if (teams.length > 0) {
+          setTeams(teams);
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Failed to load teams");
+      }
+    }
+
+    if (currentEvent) {
+      fetchRegisteredTeams(currentEvent.id);
+    }
+  }, [currentEvent]);
+
+  async function fetchCurrentEvent() {
+    try {
+      const res = await fetch("/api/events/current");
+      if (res.ok) {
+        const data = await res.json();
+        setCurrentEvent(data);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
 
   async function createEvent() {
     const name = prompt("Enter event name:");
@@ -41,9 +70,22 @@ export default function EventTab() {
     setCurrentEvent(data);
   }
 
+  async function addTeam(team: Team) {
+    setTeams((prev) => [...prev, team]);
+  }
+
+  async function removeTeam(teamId: number) {
+    setTeams((prev) => prev.filter((t) => t.id !== teamId));
+  }
+
   return (
     <div className="space-y-6">
-      {!currentEvent ? (
+      {loading ? (
+        // Skeleton/Loader
+        <div className="p-10 flex justify-center items-center">
+          <span className="text-gray-500 animate-pulse">Loading event...</span>
+        </div>
+      ): !currentEvent ? (
         <div
           onClick={createEvent}
           className="cursor-pointer border-2 border-dashed border-gray-300 rounded-xl p-10 flex flex-col items-center justify-center text-center hover:border-green-500 hover:bg-green-50 transition"
@@ -61,7 +103,6 @@ export default function EventTab() {
             {/* Header with event name + action */}
             <div className="flex items-center justify-between p-4 bg-gray-300">
               <h2 className="text-lg font-bold text-black">{currentEvent.name}</h2>
-              {currentEvent.status === "open" && (
                 <button
                   onClick={() => endEvent(currentEvent.id)}
                   className="p-2 bg-red-600 text-white rounded-2xl shadow hover:bg-red-700 flex flex-col items-center"
@@ -69,36 +110,22 @@ export default function EventTab() {
                   <StopCircle size={18} />
                   <span className="mt-1 hidden sm:block">End Event</span>
                 </button>
-              )}
             </div>
 
-            {/* Body with details */}
-            <div className="p-4">
-              <div className="mt-4 grid grid-cols-3 gap-4 text-sm">
-                <div className="bg-gray-50 p-3 rounded-lg shadow-sm">
-                  <span className="block text-gray-500 text-xs uppercase">Net</span>
-                  <span className="text-lg font-semibold text-gray-800">
-                    {currentEvent.balance?.net ?? 0}
-                  </span>
-                </div>
-                <div className="bg-gray-50 p-3 rounded-lg shadow-sm">
-                  <span className="block text-gray-500 text-xs uppercase">Inflow</span>
-                  <span className="text-lg font-semibold text-green-700">
-                    {currentEvent.balance?.inflow ?? 0}
-                  </span>
-                </div>
-                <div className="bg-gray-50 p-3 rounded-lg shadow-sm">
-                  <span className="block text-gray-500 text-xs uppercase">Outflow</span>
-                  <span className="text-lg font-semibold text-red-700">
-                    {currentEvent.balance?.outflow ?? 0}
-                  </span>
-                </div>
-              </div>
-            </div>
+            {/* Teams section */}
+            <TeamsPanel 
+              eventId={currentEvent.id} 
+              teams={teams} 
+              onTeamAdded={(team) => addTeam(team)}
+              onTeamRemoved={(teamId) => removeTeam(teamId)}
+            />
           </div>
 
-          {/* Main Content: Fights list + Controls */}
-          <FightsPanel eventId={currentEvent.id} />
+          {/* Fights Controls and list */}
+          <FightsPanel 
+            eventId={currentEvent.id} 
+            teams={teams}
+          />
         </>
       )}
     </div>

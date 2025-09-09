@@ -1,5 +1,6 @@
 import {
   pgTable,
+  primaryKey,
   serial,
   text,
   integer,
@@ -16,6 +17,15 @@ export const users = pgTable("users", {
   role: text("role").notNull().default("player"),
   credits: numeric("credits", { precision: 12, scale: 2 }).notNull().default("0"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const teams = pgTable("teams", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  owner: text("owner").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export const events = pgTable("events", {
@@ -27,14 +37,33 @@ export const events = pgTable("events", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export const eventTeams = pgTable("event_teams", 
+  {
+    eventId: integer("event_id")
+      .notNull()
+      .references(() => events.id, { onDelete: "cascade" }),
+    teamId: integer("team_id")
+      .notNull()
+      .references(() => teams.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.eventId, t.teamId] }),
+  ]
+);
+
 export const fights = pgTable("fights", {
   id: serial("id").primaryKey(),
   eventId: integer("event_id")
     .notNull()
     .references(() => events.id),
-  // fightNumber: integer("fight_number"),
-  aSide: text("a_side").notNull().default("Side A"),
-  bSide: text("b_side").notNull().default("Side B"),
+  fightNumber: integer("fight_number"),
+  aTeamId: integer("a_team_id")
+    .notNull()
+    .references(() => teams.id),
+  bTeamId: integer("b_team_id")
+    .notNull()
+    .references(() => teams.id),
   status: text("status").default("open").notNull(), 
   winningSide: text("winning_side"),         // set when fight is settled
   createdAt: timestamp("created_at").defaultNow().notNull(),

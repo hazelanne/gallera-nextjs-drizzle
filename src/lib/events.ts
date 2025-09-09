@@ -1,5 +1,5 @@
 import { db } from "./db/client";
-import { events } from "./db/schema";
+import { events, eventTeams } from "./db/schema";
 import { eq, desc, or } from "drizzle-orm";
 
 export async function startEvent(name: string) {
@@ -64,4 +64,13 @@ export async function getAllEvents() {
   });
 
   return event;
+}
+
+export async function addTeamToEvent(eventId: number, teamId: number) {
+  const [entry] = await db
+    .insert(eventTeams)
+    .values({ eventId, teamId })
+    .onConflictDoNothing({ target: [eventTeams.eventId, eventTeams.teamId] })
+    .returning();
+  return entry;
 }
