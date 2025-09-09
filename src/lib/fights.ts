@@ -282,10 +282,10 @@ export async function getFights(eventId: number, page: number = 0, limit: number
   return { fights, hasMore };
 }
 
-async function getFightsWinners(eventId: number) {
+export async function getFightsWinners(eventId: number) {
   const results = await db
     .select({
-      winningTeam: sql<number>`
+      teamId: sql<number>`
         CASE 
           WHEN ${fights.winningSide} = 'LIYAMADO' THEN ${fights.aTeamId}
           WHEN ${fights.winningSide} = 'DEHADO' THEN ${fights.bTeamId}

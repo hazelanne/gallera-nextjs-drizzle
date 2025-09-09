@@ -1,17 +1,24 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Team } from "@/components/admin/types";
+import { useState, useEffect, useMemo } from "react";
+import { Team, Tally } from "@/components/admin/types";
 
 interface EventTeamsPanelProps {
   eventId: number;
   teams: Team[];
+  tally: Tally[];
   onTeamAdded: (team: Team) => void;
   onTeamRemoved: (teamId: number) => void;
 }
 
-export default function TeamsPanel({ eventId, teams, onTeamAdded, onTeamRemoved }: EventTeamsPanelProps) {
+export default function TeamsPanel({ eventId, teams, tally, onTeamAdded, onTeamRemoved }: EventTeamsPanelProps) {
   const [showAddTeamModal, setShowAddTeamModal] = useState(false);
+
+  const teamWinMap = useMemo(() => {
+    return Object.fromEntries(
+      tally.map(result => [result.teamId, result.wins])
+    );
+  }, [tally]);
 
   async function addTeamToEvent(team: Team) {
     const params = { teamId: team.id };
@@ -54,7 +61,7 @@ export default function TeamsPanel({ eventId, teams, onTeamAdded, onTeamRemoved 
                 <td className="px-4 py-2 font-medium">{team.name}</td>
                 <td className="px-4 py-2 text-gray-500">{team.owner}</td>
                 <td className="px-4 py-2 text-center font-semibold text-green-700">
-                  {team.wins ?? 0}
+                  {teamWinMap[team.id] ?? 0}
                 </td>
               </tr>
             ))}

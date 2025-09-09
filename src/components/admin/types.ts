@@ -1,7 +1,14 @@
+export interface Tally {
+  teamId: number;
+  wins: number;
+}
+
 export interface Event {
   id: number;
   name: String;
   status: String;
+  fightCount: number;
+  tally: Tally[];
 }
 
 export interface Fight {

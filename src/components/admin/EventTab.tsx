@@ -1,14 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { StopCircle, PlusCircle } from "lucide-react";
-import { Team, Event } from "@/components/admin/types";
+import { Team, Event, Tally } from "@/components/admin/types";
 import FightsPanel from "./FightsPanel";
 import TeamsPanel from "./TeamsPanel";
 
 export default function EventTab() {
   const [loading, setLoading] = useState(true);
   const [currentEvent, setCurrentEvent] = useState<Event | null>(null);
+  const [currentTally, setCurrentTally] = useState<Tally[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
 
   useEffect(() => {
@@ -42,6 +43,7 @@ export default function EventTab() {
       if (res.ok) {
         const data = await res.json();
         setCurrentEvent(data);
+        setCurrentTally(data.tally);
       }
     } finally {
       setLoading(false);
@@ -115,7 +117,8 @@ export default function EventTab() {
             {/* Teams section */}
             <TeamsPanel 
               eventId={currentEvent.id} 
-              teams={teams} 
+              teams={teams}
+              tally={currentTally}
               onTeamAdded={(team) => addTeam(team)}
               onTeamRemoved={(teamId) => removeTeam(teamId)}
             />
