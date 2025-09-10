@@ -50,12 +50,25 @@ export async function createNewFight(eventId: number, aSideId: number, bSideId: 
     return currentFight;
   }
 
+  const [lastFight] = await db
+    .select()
+    .from(fights)
+    .where(eq(fights.eventId, eventId))
+    .orderBy(desc(fights.fightNumber))
+    .limit(1);
+  
+  const nextFightNumber =
+    lastFight && lastFight.fightNumber != null
+      ? lastFight.fightNumber + 1
+      : 1;
+
   const [fight] = await db
     .insert(fights)
     .values({
       aTeamId: aSideId,
       bTeamId: bSideId,
       eventId: eventId,
+      fightNumber: nextFightNumber, 
       status: "open",
     })
     .returning();
@@ -63,6 +76,7 @@ export async function createNewFight(eventId: number, aSideId: number, bSideId: 
   broadcast({ 
     type: "NEW_FIGHT", payload: {
       fightId: fight.id,
+      fightNumber: nextFightNumber,
       status: fight.status
     }
   });
@@ -99,7 +113,8 @@ export async function startFight(fightId: number) {
   broadcast({ 
     type: "START_FIGHT", payload: {
       fightId: updated.id,
-      status: updated.status
+      status: updated.status,
+      fightNumber: updated.fightNumber,
     }
   });
 
@@ -160,7 +175,8 @@ export async function endFight(fightId: number, winner: string) {
   broadcast({ 
     type: "END_FIGHT", payload: {
       fightId: result.id,
-      status: result.status
+      status: result.status,
+      fightNumber: result.fightNumber,
     }
   });
 
@@ -208,7 +224,8 @@ export async function cancelFight(fightId: number) {
   broadcast({ 
     type: "CANCEL_FIGHT", payload: {
       fightId: result.id,
-      status: result.status
+      status: result.status,
+      fightNumber: result.fightNumber,
     }
   });
 
@@ -247,6 +264,7 @@ export async function getCurrentFight() {
   return {
     fightId: fight.id,
     status: fight.status,
+    fightNumber: fight.fightNumber,
     tally,
     payout
   };
