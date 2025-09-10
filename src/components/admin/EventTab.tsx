@@ -1,16 +1,26 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { StopCircle, PlusCircle } from "lucide-react";
+import { PlusCircle, X } from "lucide-react";
 import { Team, Event, Tally } from "@/components/admin/types";
 import FightsPanel from "./FightsPanel";
 import TeamsPanel from "./TeamsPanel";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 export default function EventTab() {
   const [loading, setLoading] = useState(true);
   const [currentEvent, setCurrentEvent] = useState<Event | null>(null);
   const [currentTally, setCurrentTally] = useState<Tally[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
+  const [showEndDialog, setShowEndDialog] = useState(false);
 
   useEffect(() => {
     fetchCurrentEvent();
@@ -70,6 +80,7 @@ export default function EventTab() {
     });
     const data = await res.json();
     setCurrentEvent(data);
+    setShowEndDialog(false);
   }
 
   async function addTeam(team: Team) {
@@ -83,54 +94,94 @@ export default function EventTab() {
   return (
     <div className="space-y-6">
       {loading ? (
-        // Skeleton/Loader
         <div className="p-10 flex justify-center items-center">
           <span className="text-gray-500 animate-pulse">Loading event...</span>
         </div>
-      ): !currentEvent ? (
+      ) : !currentEvent ? (
         <div
           onClick={createEvent}
           className="cursor-pointer border-2 border-dashed border-gray-300 rounded-xl p-10 flex flex-col items-center justify-center text-center hover:border-green-500 hover:bg-green-50 transition"
         >
           <PlusCircle size={48} className="text-green-600 mb-3" />
-          <h2 className="text-lg font-semibold text-gray-700">Start a New Event</h2>
+          <h2 className="text-lg font-semibold text-gray-700">
+            Start a New Event
+          </h2>
           <p className="text-sm text-gray-500 mt-1">
             Click here to create and manage fights under a new event.
           </p>
         </div>
       ) : (
-        <>
-          {/* Event details card */}
-          <div className="bg-white rounded-xl shadow overflow-hidden">
-            {/* Header with event name + action */}
-            <div className="flex items-center justify-between p-4 bg-gray-300">
-              <h2 className="text-lg font-bold text-black">{currentEvent.name}</h2>
-                <button
-                  onClick={() => endEvent(currentEvent.id)}
-                  className="p-2 bg-red-600 text-white rounded-2xl shadow hover:bg-red-700 flex flex-col items-center"
-                >
-                  <StopCircle size={18} />
-                  <span className="mt-1 hidden sm:block">End Event</span>
-                </button>
-            </div>
-
-            {/* Teams section */}
-            <TeamsPanel 
-              eventId={currentEvent.id} 
-              teams={teams}
-              tally={currentTally}
-              onTeamAdded={(team) => addTeam(team)}
-              onTeamRemoved={(teamId) => removeTeam(teamId)}
-            />
+        <div className="bg-white rounded-xl shadow overflow-hidden">
+          {/* Sticky Event Header */}
+          <div className="flex items-center justify-between p-4 bg-gray-300 sticky top-0 z-10">
+            <h2 className="text-lg font-bold text-black">
+              {currentEvent.name}
+            </h2>
+            <button
+              onClick={() => setShowEndDialog(true)}
+              className="flex flex-col items-center justify-center p-2 bg-red-500 text-white rounded-2xl shadow hover:bg-red-600 disabled:opacity-50"
+            >
+              <X size={20} />
+            </button>
           </div>
 
-          {/* Fights Controls and list */}
-          <FightsPanel 
-            eventId={currentEvent.id} 
-            teams={teams}
-          />
-        </>
+          {/* Tabs for Teams & Fights */}
+          <Tabs defaultValue="teams" className="w-full">
+            <TabsList className="w-full flex justify-around bg-gray-100 rounded-t-lg">
+              <TabsTrigger
+                value="teams"
+                className="w-full data-[state=active]:bg-white data-[state=active]:text-yellow-600 data-[state=active]:font-semibold data-[state=active]:shadow-inner rounded-t-lg transition"
+              >
+                Teams
+              </TabsTrigger>
+              <TabsTrigger
+                value="fights"
+                className="w-full data-[state=active]:bg-white data-[state=active]:text-yellow-600 data-[state=active]:font-semibold data-[state=active]:shadow-inner rounded-t-lg transition"
+              >
+                Fights
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="teams">
+              <TeamsPanel
+                eventId={currentEvent.id}
+                teams={teams}
+                tally={currentTally}
+                onTeamAdded={addTeam}
+                onTeamRemoved={removeTeam}
+              />
+            </TabsContent>
+
+            <TabsContent value="fights">
+              <FightsPanel eventId={currentEvent.id} teams={teams} />
+            </TabsContent>
+          </Tabs>
+        </div>
       )}
+
+      {/* End Event Confirmation Dialog */}
+      <Dialog open={showEndDialog} onOpenChange={setShowEndDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>End Event?</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-gray-600">
+            Ending this event will prevent new fights from being created. This
+            action cannot be undone.
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEndDialog(false)}>
+              Cancel
+            </Button>
+            <Button
+              className="bg-red-600 hover:bg-red-700 text-white"
+              onClick={() => currentEvent && endEvent(currentEvent.id)}
+            >
+              Confirm End
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

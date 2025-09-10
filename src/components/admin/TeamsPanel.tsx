@@ -11,12 +11,18 @@ interface EventTeamsPanelProps {
   onTeamRemoved: (teamId: number) => void;
 }
 
-export default function TeamsPanel({ eventId, teams, tally, onTeamAdded, onTeamRemoved }: EventTeamsPanelProps) {
+export default function TeamsPanel({
+  eventId,
+  teams,
+  tally,
+  onTeamAdded,
+  onTeamRemoved,
+}: EventTeamsPanelProps) {
   const [showAddTeamModal, setShowAddTeamModal] = useState(false);
 
   const teamWinMap = useMemo(() => {
     return Object.fromEntries(
-      tally.map(result => [result.teamId, result.wins])
+      tally.map((result) => [result.teamId, result.wins])
     );
   }, [tally]);
 
@@ -29,7 +35,7 @@ export default function TeamsPanel({ eventId, teams, tally, onTeamAdded, onTeamR
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(params),
       });
-      
+
       onTeamAdded(team);
     } finally {
       setShowAddTeamModal(false);
@@ -44,15 +50,21 @@ export default function TeamsPanel({ eventId, teams, tally, onTeamAdded, onTeamR
 
   return (
     <div className="p-4 space-y-4">
-      <h3 className="text-md font-semibold mb-2">Participating Teams</h3>
+      {/* <h3 className="text-md font-semibold mb-2">Participating Teams</h3> */}
 
       <div className="overflow-x-auto">
         <table className="min-w-full text-sm text-left border-collapse">
           <thead className="bg-gray-100">
             <tr>
-              <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">NAME</th>
-              <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">OWNER</th>
-              <th className="px-4 py-2 text-center text-sm font-medium text-gray-600">WINS</th>
+              <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">
+                NAME
+              </th>
+              <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">
+                OWNER
+              </th>
+              <th className="px-4 py-2 text-center text-sm font-medium text-gray-600">
+                WINS
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
@@ -71,7 +83,7 @@ export default function TeamsPanel({ eventId, teams, tally, onTeamAdded, onTeamR
               <td colSpan={3} className="px-4 py-2">
                 <button
                   onClick={() => setShowAddTeamModal(true)}
-                  className="w-full text-left px-3 py-2 border-2 border-dashed border-green-600 rounded-lg text-green-600 hover:bg-green-50"
+                  className="w-full text-left px-3 py-2 border-2 border-dashed border-green-600 rounded-2xl text-green-600 hover:bg-green-50"
                 >
                   + Register Team
                 </button>
@@ -127,13 +139,15 @@ function AddTeamModal({
     }
 
     setSearchResults(
-      existingTeams.filter(t =>
+      existingTeams.filter((t) =>
         t.name.toLowerCase().includes(search.toLowerCase())
       )
     );
   }, [search, existingTeams]);
 
-  const exactMatch = searchResults.find(r => r.name.toLowerCase() === search.toLowerCase());
+  const exactMatch = searchResults.find(
+    (r) => r.name.toLowerCase() === search.toLowerCase()
+  );
 
   async function handleSelect(team: Team) {
     onSelectTeam(team);
@@ -173,7 +187,9 @@ function AddTeamModal({
               autoFocus
             />
 
-            {loading && <div className="text-sm text-gray-500">Searching...</div>}
+            {loading && (
+              <div className="text-sm text-gray-500">Searching...</div>
+            )}
 
             {(searchResults.length > 0 || search.trim()) && (
               <ul className="max-h-48 overflow-y-auto mt-2 space-y-1 border border-gray-200 rounded-lg shadow-sm">
@@ -208,7 +224,9 @@ function AddTeamModal({
         {step === "create" && (
           <>
             <h2 className="text-lg font-bold">Create New Team</h2>
-            <div className="text-sm text-gray-700 mb-2">Team name: <span className="font-medium">{search.trim()}</span></div>
+            <div className="text-sm text-gray-700 mb-2">
+              Team name: <span className="font-medium">{search.trim()}</span>
+            </div>
 
             <input
               type="text"
@@ -220,7 +238,9 @@ function AddTeamModal({
             />
 
             <button
-              onClick={() => {handleCreate()}}
+              onClick={() => {
+                handleCreate();
+              }}
               className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 mb-2"
             >
               Create & Add
@@ -236,7 +256,10 @@ function AddTeamModal({
         )}
 
         <div className="flex justify-end mt-2">
-          <button onClick={onClose} className="text-gray-600 hover:text-gray-800">
+          <button
+            onClick={onClose}
+            className="text-gray-600 hover:text-gray-800"
+          >
             Close
           </button>
         </div>

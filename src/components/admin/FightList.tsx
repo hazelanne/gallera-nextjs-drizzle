@@ -3,18 +3,22 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Fight, Team } from "@/components/admin/types";
 
 interface FightListProps {
-  fights: Fight[],
-  teams: Team[],
-  page: number,
-  hasMore: boolean,
+  fights: Fight[];
+  teams: Team[];
+  page: number;
+  hasMore: boolean;
   onPageChange: (page: number) => void;
 }
 
-export default function FightList({ fights, teams, page, hasMore, onPageChange } : FightListProps) {
+export default function FightList({
+  fights,
+  teams,
+  page,
+  hasMore,
+  onPageChange,
+}: FightListProps) {
   const teamsMap = useMemo(() => {
-    return Object.fromEntries(
-      teams.map(team => [team.id, team])
-    );
+    return Object.fromEntries(teams.map((team) => [team.id, team]));
   }, [teams]);
 
   return (
@@ -24,9 +28,15 @@ export default function FightList({ fights, teams, page, hasMore, onPageChange }
           <thead className="bg-gray-100 text-gray-700 uppercase text-xs">
             <tr>
               <th className="px-4 py-2">#</th>
-              <th className="px-4 py-2 text-sm font-medium text-red-600">Liyamado</th>
-              <th className="px-4 py-2 text-sm font-medium text-blue-600">Dehado</th>
-              <th className="px-4 py-2 text-sm font-medium text-gray-600">Result</th>
+              <th className="px-4 py-2 text-sm font-medium text-red-600">
+                Liyamado
+              </th>
+              <th className="px-4 py-2 text-sm font-medium text-blue-600">
+                Dehado
+              </th>
+              <th className="px-4 py-2 text-sm font-medium text-gray-600">
+                Result
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y">
@@ -58,11 +68,15 @@ export default function FightList({ fights, teams, page, hasMore, onPageChange }
                     );
                   } else if (fight.winningSide === "LIYAMADO") {
                     resultEl = (
-                      <span className="font-semibold text-red-600">LIYAMADO</span>
+                      <span className="font-semibold text-red-600">
+                        LIYAMADO
+                      </span>
                     );
                   } else if (fight.winningSide === "DEHADO") {
                     resultEl = (
-                      <span className="font-semibold text-blue-600">DEHADO</span>
+                      <span className="font-semibold text-blue-600">
+                        DEHADO
+                      </span>
                     );
                   }
                 } else {
@@ -72,13 +86,13 @@ export default function FightList({ fights, teams, page, hasMore, onPageChange }
                 return (
                   <tr key={fight.id} className="hover:bg-gray-50">
                     <td className="px-2 py-2 font-medium">
-                      { fight.fightNumber }
+                      {fight.fightNumber}
                     </td>
-                    <td className="px-4 py-2 font-medium text-red-600">
-                      { teamsMap[fight.aTeamId]?.name }
+                    <td className="px-4 py-2 font-medium">
+                      {teamsMap[fight.aTeamId]?.name}
                     </td>
-                    <td className="px-4 py-2 font-medium text-blue-600">
-                      { teamsMap[fight.bTeamId]?.name }
+                    <td className="px-4 py-2 font-medium">
+                      {teamsMap[fight.bTeamId]?.name}
                     </td>
                     <td className="px-4 py-2">{resultEl}</td>
                   </tr>
@@ -87,7 +101,7 @@ export default function FightList({ fights, teams, page, hasMore, onPageChange }
           </tbody>
         </table>
       </div>
-      
+
       <div className="flex justify-between items-center mt-4">
         <button
           onClick={() => onPageChange(Math.max(0, page - 1))}
@@ -108,5 +122,5 @@ export default function FightList({ fights, teams, page, hasMore, onPageChange }
         </button>
       </div>
     </div>
-  )
+  );
 }
