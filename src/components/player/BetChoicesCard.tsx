@@ -3,11 +3,13 @@ type BetChoice = "LIYAMADO" | "DEHADO" | "DRAW";
 export default function BetChoicesCard({
   choice,
   tally,
+  payout,
   disabled,
   onClick,
 }: {
   choice: BetChoice;
   tally: number;
+  payout: number;
   disabled: boolean;
   onClick: () => void;
 }) {
@@ -32,11 +34,21 @@ export default function BetChoicesCard({
       >
         {choice}
       </button>
-      {!(choice === "DRAW") && (
-        <div
-          className={`mt-1 text-sm font-semibold ${tallyTextColorMap[choice]}`}
-        >
-          {tally.toFixed(2)}
+
+      {choice === "DRAW" ? (
+        <div className="text-center mt-1 text-xs text-green-600">
+          Draw wins x8
+        </div>
+      ) : (
+        <div className="text-center">
+          <div
+            className={`mt-1 text-sm font-semibold ${tallyTextColorMap[choice]}`}
+          >
+            {tally.toFixed(0)}
+          </div>
+          <div className={`mt-1 text-sm ${tallyTextColorMap[choice]}`}>
+            ({payout.toFixed(2)})
+          </div>
         </div>
       )}
     </div>

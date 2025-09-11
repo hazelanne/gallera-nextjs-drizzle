@@ -9,29 +9,18 @@ import React, {
 } from "react";
 import { useRouter } from "next/navigation";
 import { Trophy } from "lucide-react";
+import { Event, Fight } from "@/components/player/types";
 import BalanceCard from "@/components/player/BalanceCard";
 import Header from "@/components/player/Header";
 import BetChoicesCard from "@/components/player/BetChoicesCard";
 import BetAmountModal from "@/components/player/BetAmountModal";
 import BetHistoryModal from "@/components/player/BetHistoryModal";
+import EventFeed from "@/components/player/EventFeed";
 import { useWebSocket } from "@/hooks/useWebSocket";
-
-// --- Types ---
-type Fight = {
-  fightId: number;
-  fightNumber: number;
-  status: "open" | "started" | "closed" | "cancelled";
-  tally: { DEHADO: number; LIYAMADO: number; DRAW: number };
-  payout: { DEHADO: number; LIYAMADO: number; DRAW: number };
-};
-
-type Event = {
-  eventId: number;
-  name: string;
-};
 
 export default function UserMainScreen() {
   const [loading, setLoading] = useState(false);
+  const [showFeed, setShowFeed] = useState(false);
   const [balance, setBalance] = useState<number>(0);
   const [currentEvent, setCurrentEvent] = useState<Event | null>(null);
   const [currentFight, setCurrentFight] = useState<Fight | null>(null);
@@ -142,12 +131,10 @@ export default function UserMainScreen() {
   };
 
   return (
-    <div className="min-h-screen p-6 bg-gray-50">
+    <div className="min-h-screen p-4 bg-gray-50">
       <div className="max-w-3xl mx-auto space-y-4">
         {/* Header */}
         <Header
-          eventName={currentEvent?.name}
-          fightNumber={currentFight?.fightNumber}
           onShowHistory={() => setShowHistory(true)}
           onLogout={handleLogout}
         />
@@ -157,6 +144,14 @@ export default function UserMainScreen() {
           {/* Balance */}
           <BalanceCard balance={balance} />
 
+          {/* Feed */}
+          {showFeed && (
+            <EventFeed
+              currentEvent={currentEvent}
+              currentFight={currentFight}
+            />
+          )}
+
           {/* Bet Choices */}
           <div className="grid grid-cols-3 gap-4">
             {["LIYAMADO", "DRAW", "DEHADO"].map((c) => (
@@ -164,6 +159,7 @@ export default function UserMainScreen() {
                 key={c}
                 choice={c as "LIYAMADO" | "DEHADO" | "DRAW"}
                 tally={tally[c] ?? 0}
+                payout={payouts[c] ?? 0}
                 disabled={loading || currentFight?.status !== "open"}
                 onClick={() => setBetChoice(c as any)}
               />
@@ -172,55 +168,45 @@ export default function UserMainScreen() {
 
           {/* Bets */}
           <section>
-            <h3 className="font-semibold mb-1 text-sm text-gray-500">
+            <h3 className="font-semibold mb-2 text-sm text-gray-500">
               Your Bets
             </h3>
-            <div className="grid grid-cols-3 gap-3 text-xs">
-              <div className="p-2 border rounded text-center">
-                {(bets.LIYAMADO ?? 0).toFixed(2)}
-              </div>
-              <div className="p-2 border rounded text-center">
-                {(bets.DRAW ?? 0).toFixed(2)}
-              </div>
-              <div className="p-2 border rounded text-center">
-                {(bets.DEHADO ?? 0).toFixed(2)}
-              </div>
-            </div>
-          </section>
 
-          {/* Payouts */}
-          <section>
-            <h3 className="font-semibold mb-1 text-sm text-gray-500">
-              Payouts
-            </h3>
-            <div className="grid grid-cols-3 gap-3 text-xs">
-              <div className="p-2 border rounded flex-1 text-center bg-red-50">
-                {(payouts.LIYAMADO ?? 0).toFixed(2)}
-              </div>
-              <div className="p-2 border rounded flex-1 text-center bg-green-50">
-                {(payouts.DRAW ?? 0).toFixed(2)}
-              </div>
-              <div className="p-2 border rounded flex-1 text-center bg-blue-50">
-                {(payouts.DEHADO ?? 0).toFixed(2)}
-              </div>
-            </div>
-          </section>
+            <div className="grid grid-cols-3 gap-4">
+              {(["LIYAMADO", "DRAW", "DEHADO"] as const).map((choice) => {
+                const bg =
+                  choice === "LIYAMADO"
+                    ? "bg-red-50"
+                    : choice === "DRAW"
+                    ? "bg-green-50"
+                    : "bg-blue-50";
 
-          {/* Total Winnings */}
-          <section>
-            <h3 className="font-semibold mb-1 text-sm text-gray-500">
-              You Win
-            </h3>
-            <div className="grid grid-cols-3 gap-3 text-xs">
-              <div className="p-2 border rounded text-center font-bold bg-yellow-50 text-sm">
-                {(totalWinnings.LIYAMADO ?? 0).toFixed(2)}
-              </div>
-              <div className="p-2 border rounded text-center font-bold bg-yellow-50 text-sm">
-                {(totalWinnings.DRAW ?? 0).toFixed(2)}
-              </div>
-              <div className="p-2 border rounded text-center font-bold bg-yellow-50 text-sm">
-                {(totalWinnings.DEHADO ?? 0).toFixed(2)}
-              </div>
+                const betAmount = bets[choice] ?? 0;
+                const winnings = totalWinnings[choice] ?? 0;
+
+                return (
+                  <div key={choice} className="flex flex-col gap-2">
+                    {/* Bet Card */}
+                    <div
+                      className={`${bg} rounded-xl shadow-sm p-3 flex flex-col items-center justify-center`}
+                    >
+                      <div className="text-lg font-bold text-gray-800">
+                        {betAmount.toFixed(0)}
+                      </div>
+                    </div>
+
+                    {/* Winnings Card (only if bet > 0) */}
+                    {betAmount > 0 && (
+                      <div className="rounded-xl shadow-sm p-2 flex items-center justify-center bg-yellow-50">
+                        <Trophy className="w-4 h-4 text-yellow-500 mr-1" />
+                        <span className="text-sm font-medium text-yellow-700">
+                          {winnings.toFixed(0)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </section>
 

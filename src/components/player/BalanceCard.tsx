@@ -1,4 +1,4 @@
-import { Wallet, Trophy } from "lucide-react";
+import { Wallet } from "lucide-react";
 
 export default function BalanceCard({ balance }: { balance: number | string }) {
   return (
@@ -8,9 +8,9 @@ export default function BalanceCard({ balance }: { balance: number | string }) {
           <div className="text-left flex-1">
             <div className="flex gap-2 items-center">
               <Wallet className="w-4 h-4 text-gray-500" />
-              <div className="text-sm text-gray-500">Balance</div>
+              <div className="text-xs text-gray-500">Balance</div>
             </div>
-            <div className="text-3xl font-bold text-gray-800">
+            <div className="text-3xl font-bold text-yellow-800">
               {typeof balance === "number" ? balance.toFixed(2) : balance}
             </div>
           </div>
