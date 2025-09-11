@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 
@@ -109,10 +115,7 @@ export default function FightWinnerSelect({
             </p>
 
             {/* Countdown progress */}
-            <Progress
-              value={(countdown / 10) * 100}
-              className="h-2"
-            />
+            <Progress value={(countdown / 10) * 100} className="h-2" />
 
             <div className="flex gap-3">
               <Button

@@ -1,8 +1,7 @@
 import { db } from "./db/client";
 import { bets, users, fights, transactions } from "./db/schema";
-import { and, eq, sql, gte } from "drizzle-orm";
+import { and, eq, sql, gte, desc } from "drizzle-orm";
 import { getCurrentFight } from "@/lib/fights";
-import { recordTransaction } from "@/lib/funds";
 import { broadcast } from "@/lib/ws";
 
 export async function placeBet(
@@ -84,4 +83,26 @@ export async function getBetsTotals(userId: number, fightId: number) {
     }, {});
 
     return betsTotals;
+}
+
+export async function getBetHistoryOfUserByEvent(userId: number, eventId: number) {
+  const result = await db
+    .select({
+      fightNumber: fights.fightNumber,
+      betChoice: bets.betChoice,
+      amount: bets.amount,
+      won: bets.won,
+      wonAmount: bets.wonAmount,
+    })
+    .from(bets)
+    .leftJoin(fights, eq(fights.id, bets.fightId))
+    .where(
+      and(
+        eq(bets.userId, userId),
+        eq(bets.eventId, eventId)
+      )
+    )
+    .orderBy(desc(fights.fightNumber));
+
+  return result;
 }

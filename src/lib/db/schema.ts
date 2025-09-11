@@ -85,6 +85,7 @@ export const bets = pgTable("bets", {
   amount: numeric("amount").notNull(),
   settled: boolean("settled").default(false).notNull(),
   won: boolean("won"),
+  wonAmount: numeric("won_amount").default("0"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

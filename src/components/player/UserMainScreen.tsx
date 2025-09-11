@@ -20,7 +20,7 @@ import { useWebSocket } from "@/hooks/useWebSocket";
 
 export default function UserMainScreen() {
   const [loading, setLoading] = useState(false);
-  const [showFeed, setShowFeed] = useState(false);
+  const [showFeed, setShowFeed] = useState(true);
   const [balance, setBalance] = useState<number>(0);
   const [currentEvent, setCurrentEvent] = useState<Event | null>(null);
   const [currentFight, setCurrentFight] = useState<Fight | null>(null);
@@ -75,13 +75,14 @@ export default function UserMainScreen() {
         setCurrentFight(msg.payload);
         break;
       case "END_FIGHT":
-      case "CANCEL_FIGHT":
         setCurrentFight(msg.payload);
         setTally({ DEHADO: 0, LIYAMADO: 0, DRAW: 0 });
         setPayouts({ DEHADO: 0, LIYAMADO: 0, DRAW: 0 });
         fetch("/api/wallet")
           .then((r) => r.json())
           .then((j) => setBalance(j.balance));
+      case "CANCEL_FIGHT":
+        setBets({ DEHADO: 0, LIYAMADO: 0, DRAW: 0 });
         break;
     }
   }, []);
@@ -226,7 +227,11 @@ export default function UserMainScreen() {
 
         {/* History Modal */}
         {showHistory && (
-          <BetHistoryModal onClose={() => setShowHistory(false)} />
+          <BetHistoryModal
+            currentEvent={currentEvent}
+            open={showHistory}
+            onClose={() => setShowHistory(false)}
+          />
         )}
       </div>
     </div>

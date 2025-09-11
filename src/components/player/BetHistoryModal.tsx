@@ -1,77 +1,124 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Event } from "@/components/player/types";
 
 type Entry = {
-  fightId: number;
-  datetime: string;
-  bet: string;
+  fightNumber: number;
+  betChoice: string;
   amount: number;
-  potentialWinnings: number;
-  result: string | null;
-  netChange: number | null;
-  balanceAfter: number | null;
+  won: boolean | null;
+  wonAmount: number | null;
 };
 
-export default function BetHistoryModal({ onClose }: { onClose: () => void }) {
+export default function BetHistoryModal({
+  currentEvent,
+  open,
+  onClose,
+}: {
+  currentEvent: Event | null;
+  open: boolean;
+  onClose: () => void;
+}) {
   const [history, setHistory] = useState<Entry[]>([]);
+
   useEffect(() => {
-    fetch("/api/history?token=client-demo-token")
+    if (!currentEvent || !open) return;
+
+    fetch(`/api/history?eventId=${currentEvent.id}`)
       .then((r) => r.json())
-      .then((j) => setHistory(j));
-  }, []);
+      .then(setHistory);
+  }, [currentEvent, open]);
+
+  const betChoiceColor = (bet: string) => {
+    switch (bet) {
+      case "LIYAMADO":
+        return "text-red-600 font-semibold";
+      case "DEHADO":
+        return "text-blue-600 font-semibold";
+      case "DRAW":
+        return "text-green-600 font-semibold";
+      default:
+        return "";
+    }
+  };
+
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4">
-      <div className="bg-white max-w-2xl w-full p-4 rounded shadow overflow-auto max-h-[80vh]">
-        <div className="flex justify-between items-center mb-2">
-          <h3 className="text-lg font-semibold">Bet History</h3>
-          <button className="px-3 py-1 border rounded" onClick={onClose}>
-            Close
-          </button>
-        </div>
-        <table className="w-full text-sm border-collapse">
-          <thead>
-            <tr className="text-left">
-              <th className="p-2">Fight</th>
-              <th className="p-2">Date</th>
-              <th className="p-2">Bet</th>
-              <th className="p-2">Amount</th>
-              <th className="p-2">Potential</th>
-              <th className="p-2">Result</th>
-              <th className="p-2">Net</th>
-              <th className="p-2">Balance</th>
-            </tr>
-          </thead>
-          <tbody>
-            {history.length === 0 && (
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Bet History</DialogTitle>
+        </DialogHeader>
+
+        <div className="overflow-auto max-h-[70vh] mt-2">
+          <table className="w-full text-sm border-collapse">
+            <thead className="bg-gray-100 sticky top-0">
               <tr>
-                <td className="p-2" colSpan={8}>
-                  No history
-                </td>
+                <th className="p-2 text-left">Fight</th>
+                <th className="p-2 text-left">Bet</th>
+                <th className="p-2 text-left">Amount</th>
+                <th className="p-2 text-left">Result</th>
+                <th className="p-2 text-left">Net</th>
               </tr>
-            )}
-            {history.map((h, idx) => (
-              <tr key={idx} className="border-t">
-                <td className="p-2">{h.fightId}</td>
-                <td className="p-2">{new Date(h.datetime).toLocaleString()}</td>
-                <td className="p-2">{h.bet}</td>
-                <td className="p-2">{h.amount.toFixed(2)}</td>
-                <td className="p-2">{h.potentialWinnings.toFixed(2)}</td>
-                <td className="p-2">{h.result ?? "PENDING"}</td>
-                <td
-                  className={`p-2 ${h.netChange && h.netChange > 0 ? "text-green-600" : "text-red-600"}`}
-                >
-                  {h.netChange
-                    ? h.netChange > 0
-                      ? `+${h.netChange.toFixed(2)}`
-                      : h.netChange.toFixed(2)
-                    : "-"}
-                </td>
-                <td className="p-2">{h.balanceAfter?.toFixed(2) ?? "-"}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+            </thead>
+            <tbody>
+              {history.length === 0 ? (
+                <tr>
+                  <td className="p-2 text-center" colSpan={5}>
+                    No history
+                  </td>
+                </tr>
+              ) : (
+                history.map((h, idx) => (
+                  <tr
+                    key={idx}
+                    className={`border-t ${
+                      idx % 2 === 0 ? "bg-white" : "bg-gray-50"
+                    } hover:bg-gray-100 transition`}
+                  >
+                    <td className="p-2">{h.fightNumber}</td>
+                    <td className={`p-2 ${betChoiceColor(h.betChoice)}`}>
+                      {h.betChoice}
+                    </td>
+                    <td className="p-2">{h.amount}</td>
+                    <td
+                      className={`p-2 ${
+                        h.won === null
+                          ? ""
+                          : h.won
+                          ? "text-green-600"
+                          : "text-red-600"
+                      }`}
+                    >
+                      {h.won === null ? "PENDING" : h.won ? "WON" : "LOST"}
+                    </td>
+                    <td
+                      className={`p-2 ${
+                        h.won === null
+                          ? ""
+                          : h.won
+                          ? "text-green-600"
+                          : "text-red-600"
+                      }`}
+                    >
+                      {h.won === null
+                        ? "-"
+                        : h.won
+                        ? `+${h.wonAmount! - h.amount}`
+                        : `-${h.amount}`}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

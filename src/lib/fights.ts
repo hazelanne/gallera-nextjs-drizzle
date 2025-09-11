@@ -30,7 +30,7 @@ async function applyBetPayout(bet: typeof bets.$inferSelect, payoutAmount: numbe
     .where(eq(users.id, bet.userId));
 
   await db.update(bets)
-    .set({ settled: true, won: true })
+    .set({ settled: true, won: true, wonAmount: String(payoutAmount) })
     .where(eq(bets.id, bet.id));
 
   await db.insert(transactions).values({
