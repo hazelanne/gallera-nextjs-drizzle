@@ -14,9 +14,11 @@ export default function EventFeed({
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2 bg-gray-100 border-b">
         <h3 className="font-semibold text-gray-800">{currentEvent?.name}</h3>
-        <span className="text-sm font-medium text-gray-600">
-          Fight #{currentFight?.fightNumber}
-        </span>
+        {currentFight && (
+          <span className="text-sm font-medium text-gray-600">
+            Fight #{currentFight?.fightNumber}
+          </span>
+        )}
       </div>
 
       {/* Video area (placeholder for now) */}

@@ -59,11 +59,11 @@ export default function BetHistoryModal({
           <table className="w-full text-sm border-collapse">
             <thead className="bg-gray-100 sticky top-0">
               <tr>
-                <th className="p-2 text-left">Fight</th>
+                <th className="p-2 text-left">#</th>
+                <th className="p-2 text-left">Choice</th>
                 <th className="p-2 text-left">Bet</th>
-                <th className="p-2 text-left">Amount</th>
-                <th className="p-2 text-left">Result</th>
-                <th className="p-2 text-left">Net</th>
+                <th className="p-2 text-left">W-L</th>
+                <th className="p-2 text-left">PnL</th>
               </tr>
             </thead>
             <tbody>
@@ -95,7 +95,7 @@ export default function BetHistoryModal({
                           : "text-red-600"
                       }`}
                     >
-                      {h.won === null ? "PENDING" : h.won ? "WON" : "LOST"}
+                      {h.won === null ? "-" : h.won ? "W" : "L"}
                     </td>
                     <td
                       className={`p-2 ${
