@@ -2,7 +2,7 @@ import { Wallet } from "lucide-react";
 
 export default function BalanceCard({ balance }: { balance: number | string }) {
   return (
-    <div className="grid grid-cols-3 gap-4">
+    <div className="grid grid-cols-3 gap-4 pb-2">
       <div className="col-span-1">
         <div className="py-2 flex items-center gap-3">
           <div className="text-left flex-1">

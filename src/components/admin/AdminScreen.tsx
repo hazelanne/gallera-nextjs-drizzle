@@ -8,9 +8,7 @@ import FundsTab from "@/components/admin/FundsTab";
 
 export default function AdminScreen() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"events" | "funds">(
-    "events"
-  );
+  const [activeTab, setActiveTab] = useState<"events" | "funds">("events");
 
   async function showEventPage() {
     setActiveTab("events");
@@ -26,9 +24,9 @@ export default function AdminScreen() {
   }
 
   return (
-    <div className="p-4 space-y-4">
+    <div className="min-h-screen p-4 space-y-4 bg-gray-50">
       {/* Header */}
-      <Header 
+      <Header
         onShowEvent={() => showEventPage()}
         onShowFunds={() => showFundsPage()}
         onLogout={() => handleLogout()}
