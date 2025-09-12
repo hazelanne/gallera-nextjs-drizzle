@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { toast } from "@/hooks/use-toast";
 import {
   PlayCircle,
   Flag,
@@ -46,6 +47,7 @@ export default function FightsPanel({
   const [loading, setLoading] = useState(false);
   const [showDeclareModal, setShowDeclareModal] = useState(false);
   const [showOpenFightModal, setShowOpenFightModal] = useState(false);
+  const [showCancelFightModal, setShowCancelFightModal] = useState(false);
   const [fights, setFights] = useState<Fight[]>([]);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
@@ -67,7 +69,11 @@ export default function FightsPanel({
         }
       } catch (err) {
         console.error(err);
-        alert("Failed to load fights");
+        toast({
+          title: "No fights loaded",
+          description: "Start fights using the control panel below.",
+          variant: "destructive",
+        });
       }
     }
 
@@ -76,7 +82,11 @@ export default function FightsPanel({
 
   async function handleAction(action: Action, body?: any) {
     if (!currentFight && action !== "open") {
-      alert("No active fight!");
+      toast({
+        title: "No active fight",
+        description: "Open fight using the control panel below.",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -97,7 +107,10 @@ export default function FightsPanel({
 
       const currentFightData = await res.json();
       setCurrentFight(currentFightData);
-      alert(`${action.toUpperCase()} OK`);
+      toast({
+        title: `${action.toUpperCase()} OK`,
+        variant: "default",
+      });
 
       if (action === "open") {
         setFights((prev) => {
@@ -114,7 +127,10 @@ export default function FightsPanel({
       }
     } catch (err) {
       console.error(err);
-      alert(`Failed ${action}`);
+      toast({
+        title: `${action.toUpperCase()} Failed`,
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -203,7 +219,7 @@ export default function FightsPanel({
             </button>
 
             <button
-              onClick={handleCancel}
+              onClick={() => setShowCancelFightModal(true)}
               disabled={
                 loading ||
                 !currentFight ||
@@ -232,6 +248,13 @@ export default function FightsPanel({
         isOpen={showDeclareModal}
         onClose={() => setShowDeclareModal(false)}
         onResult={(winner) => handleResult(winner)}
+      />
+
+      {/* Cancel Fight modal */}
+      <CancelFightDialog
+        isOpen={showCancelFightModal}
+        onOpenChange={setShowCancelFightModal}
+        onConfirmCancel={() => handleAction("cancel")}
       />
     </div>
   );
@@ -389,6 +412,46 @@ function OpenFightDialog({
             className="w-full bg-yellow-600 hover:bg-yellow-700"
           >
             Open Fight
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function CancelFightDialog({
+  isOpen,
+  onOpenChange,
+  onConfirmCancel,
+}: {
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  onConfirmCancel: () => void;
+}) {
+  return (
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Cancel fight?</DialogTitle>
+        </DialogHeader>
+
+        <p className="text-sm text-gray-600">
+          Cancelling this fight will void all bets. This action cannot be
+          undone.
+        </p>
+
+        <DialogFooter className="flex justify-end gap-3 [&>button]:w-auto">
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button
+            className="bg-red-600 hover:bg-gray-400 text-white"
+            onClick={() => {
+              onConfirmCancel();
+              onOpenChange(false);
+            }}
+          >
+            Confirm
           </Button>
         </DialogFooter>
       </DialogContent>

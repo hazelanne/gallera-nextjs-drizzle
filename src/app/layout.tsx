@@ -1,5 +1,6 @@
 import "./globals.css";
 import QueryProvider from "@/app/QueryProvider";
+import { Toaster } from "@/components/ui/toaster";
 
 export const metadata = {
   title: "Gallera Betting App",
@@ -15,6 +16,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <QueryProvider>{children}</QueryProvider>
+        <Toaster />
       </body>
     </html>
   );

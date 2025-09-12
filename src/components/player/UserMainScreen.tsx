@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
+import { toast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { Event, Fight } from "@/components/player/types";
 import BalanceCard from "@/components/player/BalanceCard";
@@ -78,9 +79,23 @@ export default function UserMainScreen() {
   const connectionStatus = useWebSocket(handleWsMessage);
 
   const handlePlaceBet = async (choice: string, amount: number) => {
-    if (amount <= 0) return alert("Enter amount > 0");
-    if (amount > balance) return alert("Insufficient balance");
-    if (!confirm(`Confirm bet of ${amount} on ${choice}?`)) return;
+    if (amount <= 0) {
+      toast({
+        title: "Invalid amount",
+        description: "Enter an amount greater than 0",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (amount > balance) {
+      toast({
+        title: "Insufficient balance",
+        description: "You don’t have enough credits",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setLoading(true);
     const res = await fetch(`/api/bet`, {
@@ -97,7 +112,12 @@ export default function UserMainScreen() {
       setBets(j.bets);
       setBalance(j.balance);
     } else {
-      alert(j.error || "Bet failed");
+      toast({
+        title: "Bet failed",
+        description: `Error: ${j.error}`,
+        variant: "destructive",
+      });
+      return;
     }
     setLoading(false);
   };

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
+import { toast } from "@/hooks/use-toast";
 import { PlusCircle, X } from "lucide-react";
 import { Team, Event, Tally } from "@/components/admin/types";
 import FightsPanel from "./FightsPanel";
@@ -38,7 +39,11 @@ export default function EventTab() {
         }
       } catch (err) {
         console.error(err);
-        alert("Failed to load teams");
+        toast({
+          title: "No teams loaded.",
+          description: "Register new teams to the event.",
+          variant: "destructive",
+        });
       }
     }
 
@@ -169,7 +174,7 @@ export default function EventTab() {
             Ending this event will prevent new fights from being created. This
             action cannot be undone.
           </p>
-          <DialogFooter className="flex justify-end gap-3">
+          <DialogFooter className="flex justify-end gap-3 [&>button]:w-auto">
             <Button variant="outline" onClick={() => setShowEndDialog(false)}>
               Cancel
             </Button>
@@ -177,7 +182,7 @@ export default function EventTab() {
               className="bg-red-600 hover:bg-red-700 text-white"
               onClick={() => currentEvent && endEvent(currentEvent.id)}
             >
-              Confirm End
+              Confirm
             </Button>
           </DialogFooter>
         </DialogContent>
