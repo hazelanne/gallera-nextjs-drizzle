@@ -65,13 +65,13 @@ export default function UserMainScreen() {
         setCurrentFight(msg.payload);
         break;
       case "END_FIGHT":
+      case "CANCEL_FIGHT":
         setCurrentFight(msg.payload);
         setTally({ DEHADO: 0, LIYAMADO: 0, DRAW: 0 });
         setPayouts({ DEHADO: 0, LIYAMADO: 0, DRAW: 0 });
         fetch("/api/wallet")
           .then((r) => r.json())
           .then((j) => setBalance(j.balance));
-      case "CANCEL_FIGHT":
         setBets({ DEHADO: 0, LIYAMADO: 0, DRAW: 0 });
         break;
     }
