@@ -25,18 +25,20 @@ export default function AdminScreen() {
 
   return (
     <div className="min-h-screen p-4 space-y-4 bg-gray-50">
-      {/* Header */}
-      <Header
-        onShowEvent={() => showEventPage()}
-        onShowFunds={() => showFundsPage()}
-        onLogout={() => handleLogout()}
-      />
+      <div className="max-w-3xl mx-auto space-y-4">
+        {/* Header */}
+        <Header
+          onShowEvent={() => showEventPage()}
+          onShowFunds={() => showFundsPage()}
+          onLogout={() => handleLogout()}
+        />
 
-      {/* Tab content */}
-      <div className="flex justify-center">
-        <div className="w-full max-w-4xl">
-          {activeTab === "events" && <EventTab />}
-          {activeTab === "funds" && <FundsTab />}
+        {/* Tab content */}
+        <div className="flex justify-center">
+          <div className="w-full max-w-4xl">
+            {activeTab === "events" && <EventTab />}
+            {activeTab === "funds" && <FundsTab />}
+          </div>
         </div>
       </div>
     </div>

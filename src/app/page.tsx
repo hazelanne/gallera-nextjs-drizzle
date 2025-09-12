@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import UserMainScreen from "@/components/player/UserMainScreen";
-import jwt from "jsonwebtoken"
+import jwt from "jsonwebtoken";
 
 const SECRET = process.env.JWT_SECRET || "dev-secret";
 
@@ -21,6 +21,6 @@ export default async function Page() {
       redirect("/admin");
     }
   }
-  
+
   return <UserMainScreen />;
 }

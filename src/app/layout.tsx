@@ -1,8 +1,11 @@
 import "./globals.css";
+import QueryProvider from "@/app/QueryProvider";
+
 export const metadata = {
-  title: "Cockfight Betting",
-  description: "Sequential cockfight betting app",
+  title: "Gallera Betting App",
+  description: "Digital Betting App for Local Gallera Events",
 };
+
 export default function RootLayout({
   children,
 }: {
@@ -10,7 +13,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <QueryProvider>{children}</QueryProvider>
+      </body>
     </html>
   );
 }

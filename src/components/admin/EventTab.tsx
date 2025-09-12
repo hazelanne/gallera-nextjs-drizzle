@@ -113,7 +113,7 @@ export default function EventTab() {
       ) : (
         <div className="bg-white rounded-xl shadow overflow-hidden">
           {/* Sticky Event Header */}
-          <div className="flex items-center justify-between p-4 bg-gray-300 sticky top-0 z-10">
+          <div className="flex items-center justify-between p-4 bg-gray-200 sticky top-0 z-10">
             <h2 className="text-lg font-bold text-black">
               {currentEvent.name}
             </h2>
@@ -127,16 +127,16 @@ export default function EventTab() {
 
           {/* Tabs for Teams & Fights */}
           <Tabs defaultValue="teams" className="w-full">
-            <TabsList className="w-full flex justify-around bg-gray-100 rounded-t-lg">
+            <TabsList className="w-full flex justify-around bg-gray-100">
               <TabsTrigger
                 value="teams"
-                className="w-full data-[state=active]:bg-white data-[state=active]:text-yellow-600 data-[state=active]:font-semibold data-[state=active]:shadow-inner rounded-t-lg transition"
+                className="w-full data-[state=active]:bg-white data-[state=active]:text-yellow-600 data-[state=active]:font-semibold data-[state=active]:shadow transition"
               >
                 Teams
               </TabsTrigger>
               <TabsTrigger
                 value="fights"
-                className="w-full data-[state=active]:bg-white data-[state=active]:text-yellow-600 data-[state=active]:font-semibold data-[state=active]:shadow-inner rounded-t-lg transition"
+                className="w-full data-[state=active]:bg-white data-[state=active]:text-yellow-600 data-[state=active]:font-semibold data-[state=active]:shadow transition"
               >
                 Fights
               </TabsTrigger>
@@ -169,7 +169,7 @@ export default function EventTab() {
             Ending this event will prevent new fights from being created. This
             action cannot be undone.
           </p>
-          <DialogFooter>
+          <DialogFooter className="flex justify-end gap-3">
             <Button variant="outline" onClick={() => setShowEndDialog(false)}>
               Cancel
             </Button>

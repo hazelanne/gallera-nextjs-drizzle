@@ -13,7 +13,7 @@ export default function Header({
     <header className="flex items-center justify-between py-3 px-2 border-b border-gray-200 rounded-xl shadow-sm  bg-gray-100">
       <div>
         <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
-          🐓 Gallera
+          🐓 Gallera Admin
         </h1>
       </div>
 
